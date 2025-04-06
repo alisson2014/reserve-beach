@@ -1,0 +1,22 @@
+{
+    "name": "ReactJS Vite Dev Container",
+    "dockerComposeFile": "../docker-compose.yml",
+    "service": "node",
+    "workspaceFolder": "/app",
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "dbaeumer.vscode-eslint", 
+          "esbenp.prettier-vscode" 
+        ],
+        "settings": {
+          "terminal.integrated.defaultProfile.linux": "bash"
+        }
+      }
+    },
+    "postCreateCommand": "npm install",
+    "remoteUser": "node",
+    "mounts": [
+      "source=${localWorkspaceFolder}/src,target=/app/src,type=bind"
+    ]
+  }
