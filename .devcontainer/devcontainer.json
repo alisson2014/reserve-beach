@@ -10,11 +10,10 @@
           "esbenp.prettier-vscode" 
         ],
         "settings": {
-          "terminal.integrated.defaultProfile.linux": "bash"
+          "terminal.integrated.defaultProfile.linux": "sh"
         }
       }
     },
-    "postCreateCommand": "npm install",
     "remoteUser": "node",
     "mounts": [
       "source=${localWorkspaceFolder}/src,target=/app/src,type=bind"
