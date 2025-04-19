@@ -1,5 +1,5 @@
 {
-    "name": "ReactJS Vite Dev Container",
+    "name": "reserve-beach-dev",
     "dockerComposeFile": "../docker-compose.yml",
     "service": "node",
     "workspaceFolder": "/app",
