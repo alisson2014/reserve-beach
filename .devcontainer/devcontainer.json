@@ -14,7 +14,7 @@
         }
       }
     },
-    "remoteUser": "node",
+    "remoteUser": "root",
     "mounts": [
       "source=${localWorkspaceFolder}/src,target=/app/src,type=bind"
     ]
