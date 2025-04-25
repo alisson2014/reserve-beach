@@ -14,7 +14,7 @@ export default function Home(): JSX.Element {
             }}
         >
             <HomeTitle />
-            <Typography variant="subtitle1">Welcome to the home page!</Typography>
+            <Typography variant="subtitle1">Welcome </Typography>
         </Box>
     );
 };
