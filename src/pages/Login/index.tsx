@@ -1,28 +1,40 @@
-import { JSX } from "react";
-import { Box, Button, Checkbox, FormControlLabel, FormGroup, TextField} from "@mui/material";
+import { JSX, useState, useCallback } from "react";
+import { Button, Checkbox, FormControlLabel, FormGroup, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
-import "./Login.css";
-import logo from "../../img/Logo.png"
+import LoginCard from "../../components/LoginCard";
+import LoginTemplate from "../LoginTemplate";
+import { EmailInput, PasswordInput } from "../../components/CustomInputs";
+import "./styles.css";
 
 export default function Login(): JSX.Element {
+    const [email, setEmail] = useState<string>("");
+    const [password, setPassword] = useState<string>("");
+
+    const onChangePassword = useCallback((e: string): void => setPassword(e), []);
+    const setEmailValue = useCallback((e: string): void => setEmail(e), []);    
+
     return (
-        <>
-        <img className="logo" src={logo} alt="Logo" />
-            <Box className = "login-container"
-                
-            >   <h1>Login</h1>
-                <TextField className = "login-field" id="standard-basic" label="Email" variant="standard" />
-                <TextField className = "login-field" id="standard-password-input" label="Senha" type="password" variant="standard" />
+        <LoginTemplate>
+            <LoginCard>   
+                <Typography variant="h4" sx={{ textAlign: "center" }}>Login</Typography>
+
+                <EmailInput emailValue={email} setEmailValue={setEmailValue} />
+                <PasswordInput passwordValue={password} setPasswordValue={onChangePassword} />
+
                 <FormGroup>
-                <FormControlLabel control={<Checkbox defaultChecked />} label="Lembrar minha senha" />
+                    <FormControlLabel control={<Checkbox defaultChecked />} label="Lembrar minha senha" />
                 </FormGroup>
-                <Link className = "login-link" to="">Esqueceu a senha ?</Link> 
-                <Button className = "login-button">
+
+                <Link className="login-link" to="/forgotPassword">Esqueceu a senha ?</Link> 
+                <Button 
+                    variant="contained"
+                    title="Realizar login com as credenciais"
+                >
                     Logar
                 </Button>
-                <Link className = "login-link" to="">Registrar-se</Link>
-                
-            </Box>
-        </>
-    )
-}
+
+                <Link className="login-link" to="/register">Registrar-se</Link>
+            </LoginCard>
+        </LoginTemplate>
+    );
+};
