@@ -3,7 +3,7 @@ import { InputLabel, Input } from "@mui/material";
 
 export const StyledInputLabel = styled(InputLabel)({
   color: "white",
-  "&.Mui-focused": {
+  "&.Mui-focused:not(.Mui-error)": {
     color: "white",
   },
 });

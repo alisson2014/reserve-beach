@@ -1,6 +1,11 @@
+import { UseFormRegister, FieldErrors } from "react-hook-form";
+import { ILoginForm } from "../../../types/forms";
+
 export interface PasswordInputProps {
     label?: string;
     passwordValue: string;
-    setPasswordValue: (value: string) => void;
     passwordId?: string;
+    register: UseFormRegister<ILoginForm>;
+    errors: FieldErrors<ILoginForm>;
+    isRegister?: boolean;
 };

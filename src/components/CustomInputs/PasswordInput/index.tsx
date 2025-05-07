@@ -1,14 +1,16 @@
-import { useState, JSX } from "react";
+import { useState, JSX, useMemo } from "react";
 import { PasswordInputProps } from "./types";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { FormControl, IconButton, InputAdornment } from "@mui/material";
+import { FormControl, IconButton, InputAdornment, FormHelperText } from "@mui/material";
 import { StyledInput, StyledInputLabel } from "../styles";
 
 export default function PasswordInput({ 
-    label = "Senha", 
     passwordValue, 
-    setPasswordValue, 
-    passwordId = "standard-adornment-password" 
+    register,
+    errors,
+    label = "Senha", 
+    passwordId = "standard-adornment-password",
+    isRegister = false
 }: PasswordInputProps): JSX.Element {
     const [showPassword, setShowPassword] = useState<boolean>(false);
 
@@ -16,14 +18,33 @@ export default function PasswordInput({
     const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => event.preventDefault();
     const handleMouseUpPassword = (event: React.MouseEvent<HTMLButtonElement>) => event.preventDefault();
 
+    const passwordProps = useMemo(() => {
+        const props = {
+            required: "O campo de senha é obrigatório."
+        };
+
+        if(!isRegister) {
+            return props;
+        }
+
+        return {
+            ...props, 
+            minLength: {
+                value: 8,
+                message: "A senha deve ter no mínimo 8 caracteres."
+            }
+        };
+    }, [isRegister]);
+
     return (
-        <FormControl variant="standard">
+        <FormControl variant="standard" error={!!errors.password}>
             <StyledInputLabel htmlFor={passwordId}>{label}</StyledInputLabel>
             <StyledInput
                 id={passwordId}
+                {...register("password", passwordProps)}
                 value={passwordValue}
-                onChange={e => setPasswordValue(e.target.value)}
                 type={showPassword ? 'text' : 'password'}
+                autoComplete="off"
                 endAdornment={
                     <InputAdornment position="end">
                         <IconButton
@@ -38,6 +59,9 @@ export default function PasswordInput({
                     </InputAdornment>
                 }
             />
+            {errors.password && (
+                <FormHelperText>{errors.password.message}</FormHelperText>
+            )}
         </FormControl>  
     );
 };
