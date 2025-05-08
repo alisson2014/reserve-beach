@@ -12,7 +12,7 @@ export const StyledInput = styled(Input)({
   "&:before": {
     borderBottomColor: "white",
   },
-  "&:hover:not(.Mui-disabled):before": {
+  "&:hover:not(.Mui-disabled, .Mui-error):before": {
     borderBottomColor: "white", 
   },
   "&:after": {

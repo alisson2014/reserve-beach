@@ -23,7 +23,7 @@ export default function EmailInput({ emailValue, register, errors }: EmailInputP
                 autoComplete="off"
                 endAdornment={
                     <InputAdornment position="start">
-                        <EmailIcon />
+                        <EmailIcon sx={{ color: "white" }} titleAccess="Email icon" />
                     </InputAdornment>
                 }
             />

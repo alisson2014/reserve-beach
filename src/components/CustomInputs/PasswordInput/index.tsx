@@ -54,7 +54,7 @@ export default function PasswordInput({
                             onMouseDown={handleMouseDownPassword}
                             onMouseUp={handleMouseUpPassword}
                         >
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                            {showPassword ? <VisibilityOff sx={{ color: "white" }} /> : <Visibility sx={{ color: "white" }} />}
                         </IconButton>
                     </InputAdornment>
                 }

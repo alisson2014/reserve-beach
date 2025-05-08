@@ -1,15 +1,16 @@
 import { JSX } from "react";
 import { Button, Checkbox, FormControlLabel, FormGroup, Typography } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm, SubmitHandler } from "react-hook-form";
-import LoginCard from "../../components/LoginCard";
+import { LoginCard, PasswordInput, EmailInput } from "../../components";
 import LoginTemplate from "../LoginTemplate";
-import { EmailInput, PasswordInput } from "../../components/CustomInputs";
 import { FakeService } from "../../service";
 import { ILoginForm } from "../../types/forms";
 import "./styles.css";
 
 export default function Login(): JSX.Element {
+    const navigate = useNavigate(); 
+
     const { register, handleSubmit, formState: { errors, isValid }, watch } = useForm<ILoginForm>({
         mode: "onChange", 
     });
@@ -21,8 +22,12 @@ export default function Login(): JSX.Element {
     const onSubmit: SubmitHandler<ILoginForm> = async () => {
         try {
             const response = await FakeService.make(email, password);
-            console.log("Login successful", response);
+
+            if(!response) return;
+            
+            navigate("/");
         } catch (error) {
+            alert("Credenciais inválidas");
             console.error("Login failed", error);
         }
     };
