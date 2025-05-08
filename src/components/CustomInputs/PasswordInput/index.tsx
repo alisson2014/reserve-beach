@@ -9,6 +9,7 @@ export default function PasswordInput({
     register,
     errors,
     label = "Senha", 
+    name = "password",
     passwordId = "standard-adornment-password",
     isRegister = false
 }: PasswordInputProps): JSX.Element {
@@ -41,7 +42,7 @@ export default function PasswordInput({
             <StyledInputLabel htmlFor={passwordId}>{label}</StyledInputLabel>
             <StyledInput
                 id={passwordId}
-                {...register("password", passwordProps)}
+                {...register(name, passwordProps)}
                 value={passwordValue}
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="off"

@@ -5,6 +5,7 @@ export interface PasswordInputProps {
     label?: string;
     passwordValue: string;
     passwordId?: string;
+    name?: "email" | "password" | "confirmPassword";
     register: UseFormRegister<ILoginForm>;
     errors: FieldErrors<ILoginForm>;
     isRegister?: boolean;

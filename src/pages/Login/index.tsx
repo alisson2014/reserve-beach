@@ -12,7 +12,7 @@ export default function Login(): JSX.Element {
     const navigate = useNavigate(); 
 
     const { register, handleSubmit, formState: { errors, isValid }, watch } = useForm<ILoginForm>({
-        mode: "onChange", 
+        mode: "onSubmit", 
     });
 
     const email = watch("email", ""); 
