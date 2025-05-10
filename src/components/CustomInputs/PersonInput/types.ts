@@ -1,12 +1,10 @@
 import { UseFormRegister, FieldErrors } from "react-hook-form";
 import { ILoginForm } from "../../../types/forms";
 
-export interface PasswordInputProps {
-    label?: string;
-    passwordValue: string;
-    passwordId?: string;
-    name?: "email" | "password" | "confirmPassword" ;
+export interface PersonInputProps {
+    label?: string;   
+    personValue: string;
     register: UseFormRegister<ILoginForm>;
     errors: FieldErrors<ILoginForm>;
-    isRegister?: boolean;
+    name?: "email" | "password" | "confirmPassword" | "name" | "lastName";
 };

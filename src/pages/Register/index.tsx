@@ -1,10 +1,11 @@
 import { JSX } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { LoginCard, PasswordInput, EmailInput } from "../../components";
+import { LoginCard, PasswordInput, EmailInput} from "../../components";
 import { ILoginForm } from "../../types/forms";
 import { Button, Checkbox, FormControlLabel, FormGroup, Typography } from "@mui/material";
 import LoginTemplate from "../LoginTemplate";
+import { PersonInput } from "../../components/CustomInputs";
 
 export default function Register(): JSX.Element {
     const navigate = useNavigate(); 
@@ -17,6 +18,9 @@ export default function Register(): JSX.Element {
     const password = watch("password","");
     const confirmPassword = watch("confirmPassword", "");
     const rememberMe = watch("rememberMe", false);
+    const name = watch("name","");
+    const lastName = watch("lastName", "");
+
 
     const onSubmit = (data: ILoginForm) => {
         console.log(data);
@@ -28,6 +32,20 @@ export default function Register(): JSX.Element {
                 <LoginCard>   
                     <Typography variant="h4" sx={{ textAlign: "center" }}>Cadastro</Typography>
                     
+                    <PersonInput
+                        personValue={name}
+                        register={register}
+                        errors={errors}
+                        name="name"
+                        label="Nome"
+                    />
+                    <PersonInput
+                        personValue={lastName}
+                        register={register}
+                        errors={errors}
+                        name="lastName"
+                        label="Sobrenome"
+                    />
                     <EmailInput 
                         emailValue={email} 
                         register={register} 
@@ -46,7 +64,6 @@ export default function Register(): JSX.Element {
                         name="confirmPassword"
                         label="Confirmar Senha"
                     />
-
                     <Button 
                         variant="contained"
                         aria-label="Realizar o registro com as credenciais"
