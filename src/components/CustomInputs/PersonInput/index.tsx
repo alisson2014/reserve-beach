@@ -1,6 +1,6 @@
 import { JSX } from "react";
 import { PersonInputProps } from "./types";
-import EmailIcon from '@mui/icons-material/Email';
+import PersonIcon from '@mui/icons-material/Person';
 import { FormControl, InputAdornment, FormHelperText } from "@mui/material";
 import { StyledInput, StyledInputLabel } from "../styles";
 
@@ -23,7 +23,7 @@ export default function PersonInput({ personValue, register, errors, label="Nome
                 autoComplete="off"
                 endAdornment={
                     <InputAdornment position="start">
-                        <EmailIcon sx={{ color: "white" }} titleAccess="Email icon" />
+                        <PersonIcon sx={{ color: "white" }} titleAccess="Email icon" />
                     </InputAdornment>
                 }
             />
