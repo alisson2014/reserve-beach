@@ -14,13 +14,12 @@ export default function Register(): JSX.Element {
         mode: "onSubmit", 
     });
 
-    const email = watch("email","");
-    const password = watch("password","");
+    const email = watch("email", "");
+    const password = watch("password", "");
     const confirmPassword = watch("confirmPassword", "");
     const rememberMe = watch("rememberMe", false);
-    const name = watch("name","");
+    const name = watch("name", "");
     const lastName = watch("lastName", "");
-
 
     const onSubmit = (data: ILoginForm) => {
         console.log(data);
@@ -28,66 +27,64 @@ export default function Register(): JSX.Element {
 
     return (
         <LoginTemplate>
-            <form onSubmit={handleSubmit(onSubmit)}>
-                <LoginCard>   
-                    <Typography variant="h4" sx={{ textAlign: "center" }}>Cadastro</Typography>
-                    
-                    <PersonInput
-                        personValue={name}
-                        register={register}
-                        errors={errors}
-                        name="name"
-                        label="Nome"
-                    />
-                    <PersonInput
-                        personValue={lastName}
-                        register={register}
-                        errors={errors}
-                        name="lastName"
-                        label="Sobrenome"
-                    />
-                    <EmailInput 
-                        emailValue={email} 
-                        register={register} 
-                        errors={errors} 
-                    />
-                    <PasswordInput 
-                        passwordValue={password} 
-                        register={register}
-                        errors={errors}
-                        name="password"
-                    />
-                    <PasswordInput
-                        passwordValue={confirmPassword}
-                        register={register}
-                        errors={errors}
-                        name="confirmPassword"
-                        label="Confirmar Senha"
-                    />
-                    <Button 
-                        variant="contained"
-                        aria-label="Realizar o registro com as credenciais"
-                        title="Realizar registro com as credenciais"
-                        type="submit"
-                        disabled={!isValid}
-                    >
-                        Registrar
-                    </Button>
+            <LoginCard onSubmit={handleSubmit(onSubmit)}>   
+                <Typography variant="h4" component="h2" sx={{ textAlign: "center" }}>Cadastro</Typography>
+                
+                <PersonInput
+                    personValue={name}
+                    register={register}
+                    errors={errors}
+                    name="name"
+                    label="Nome"
+                />
+                <PersonInput
+                    personValue={lastName}
+                    register={register}
+                    errors={errors}
+                    name="lastName"
+                    label="Sobrenome"
+                />
+                <EmailInput 
+                    emailValue={email} 
+                    register={register} 
+                    errors={errors} 
+                />
+                <PasswordInput 
+                    passwordValue={password} 
+                    register={register}
+                    errors={errors}
+                    name="password"
+                />
+                <PasswordInput
+                    passwordValue={confirmPassword}
+                    register={register}
+                    errors={errors}
+                    name="confirmPassword"
+                    label="Confirmar Senha"
+                />
+                <Button 
+                    variant="contained"
+                    aria-label="Realizar o registro com as credenciais"
+                    title="Realizar registro com as credenciais"
+                    type="submit"
+                    disabled={!isValid}
+                >
+                    Registrar
+                </Button>
 
-                    <FormGroup>
-                        <FormControlLabel 
-                            control={
-                                <Checkbox 
-                                    {...register("rememberMe")} 
-                                    defaultChecked={rememberMe} 
-                                />
-                            } 
-                            label="Manter a conta conectado" 
-                            title="Caso selecionado o sistema manterá você logado" 
-                        />
-                    </FormGroup>
-                </LoginCard>
-            </form>
+                <FormGroup>
+                    <FormControlLabel 
+                        control={
+                            <Checkbox 
+                                {...register("rememberMe")} 
+                                defaultChecked={rememberMe} 
+                            />
+                        } 
+                        label="Manter a conta conectado" 
+                        title="Caso selecionado o sistema manterá você logado" 
+                    />
+                </FormGroup>
+            </LoginCard>
         </LoginTemplate>
     );
 }

@@ -14,6 +14,14 @@ export default function EmailInput({ emailValue, register, errors }: EmailInputP
                 id={EMAIL_ID}
                 {...register("email", {
                     required: "O campo de email é obrigatório.",
+                    minLength: {
+                        value: 5,
+                        message: "O email deve ter pelo menos 5 caracteres."
+                    },
+                    maxLength: {
+                        value: 254,
+                        message: "O email deve ter no máximo 254 caracteres."
+                    },
                     pattern: {
                         value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
                         message: "Insira um email válido."
