@@ -1,6 +1,6 @@
-import { Box, styled } from "@mui/material";
+import { styled } from "@mui/material";
 
-export const BoxLoginCard = styled(Box)({
+export const FormLoginCard = styled("form")({
   background: "rgba(65, 64, 64, 0.65)",
   padding: "40px",
   borderRadius: "20px",

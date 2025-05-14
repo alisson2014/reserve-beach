@@ -1,12 +1,12 @@
 import { JSX } from "react";
 import { Button, Checkbox, FormControlLabel, FormGroup, Typography } from "@mui/material";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { LoginCard, PasswordInput, EmailInput } from "../../components";
 import LoginTemplate from "../LoginTemplate";
 import { FakeService } from "../../service";
 import { ILoginForm } from "../../types/forms";
-import "./styles.css";
+import { CustomLink } from "./styles";
 
 export default function Login(): JSX.Element {
     const navigate = useNavigate(); 
@@ -34,61 +34,58 @@ export default function Login(): JSX.Element {
 
     return (
         <LoginTemplate>
-            <form onSubmit={handleSubmit(onSubmit)}>
-                <LoginCard>   
-                    <Typography variant="h4" sx={{ textAlign: "center" }}>Login</Typography>
-                    
-                    <EmailInput 
-                        emailValue={email} 
-                        register={register} 
-                        errors={errors} 
+            <LoginCard onSubmit={handleSubmit(onSubmit)}>   
+                <Typography variant="h4" component="h2" sx={{ textAlign: "center" }}>Login</Typography>
+                
+                <EmailInput 
+                    emailValue={email} 
+                    register={register} 
+                    errors={errors} 
+                />
+                <PasswordInput 
+                    passwordValue={password} 
+                    register={register}
+                    errors={errors}
+                />
+
+                <CustomLink 
+                    title="Clique aqui para realizar a recuperação da senha" 
+                    to="/forgotPassword"
+                >
+                    Esqueceu a senha ?
+                </CustomLink> 
+
+                <Button 
+                    variant="contained"
+                    aria-label="Realizar login com as credenciais"
+                    title="Realizar login com as credenciais"
+                    type="submit"
+                    disabled={!isValid}
+                >
+                    Logar
+                </Button>
+
+                <FormGroup>
+                    <FormControlLabel 
+                        control={
+                            <Checkbox 
+                                {...register("rememberMe")} 
+                                defaultChecked={rememberMe} 
+                            />
+                        } 
+                        label="Lembrar minha senha" 
+                        title="Caso selecionado o sistema manterá você logado" 
                     />
-                    <PasswordInput 
-                        passwordValue={password} 
-                        register={register}
-                        errors={errors}
-                    />
+                </FormGroup>
 
-                    <Link 
-                        className="login-link" 
-                        title="Clique aqui para realizar a recuperação da senha" 
-                        to="/forgotPassword"
-                    >
-                        Esqueceu a senha ?
-                    </Link> 
-
-                    <Button 
-                        variant="contained"
-                        aria-label="Realizar login com as credenciais"
-                        title="Realizar login com as credenciais"
-                        type="submit"
-                        disabled={!isValid}
-                    >
-                        Logar
-                    </Button>
-
-                    <FormGroup>
-                        <FormControlLabel 
-                            control={
-                                <Checkbox 
-                                    {...register("rememberMe")} 
-                                    defaultChecked={rememberMe} 
-                                />
-                            } 
-                            label="Lembrar minha senha" 
-                            title="Caso selecionado o sistema manterá você logado" 
-                        />
-                    </FormGroup>
-
-                    <Link 
-                        className="login-link"
-                        title="Clique aqui para se cadastrar no sistema" 
-                        to="/register"
-                    >
-                        Registrar-se
-                    </Link>
-                </LoginCard>
-            </form>
+                <CustomLink
+                    title="Clique aqui para se cadastrar no sistema" 
+                    aria-label="Clique aqui para se cadastrar no sistema"
+                    to="/register"
+                >
+                    Registrar-se
+                </CustomLink>
+            </LoginCard>
         </LoginTemplate>
     );
 };
