@@ -1,3 +1,7 @@
+import axios from "axios";
+import api from "../../api";
+import { ILoginResponse } from "./types";
+
 export class AuthService {
     private static instance: AuthService;
     private _token: string | null = null;
@@ -33,5 +37,31 @@ export class AuthService {
 
     public isAuthenticated(): boolean {
         return this._token !== null;
+    }
+
+    public async login(email: string, password: string): Promise<ILoginResponse> {
+        try {
+            const { data: { data: { token, user }, message, status } } = await api.post("/user/login", { email, password });
+            
+            if (status) {
+                this.token = token;
+            } 
+            
+            return { message, user };
+        } catch (error) {
+            this.clearToken();
+
+            if (axios.isAxiosError(error)) {
+                if (error.response) {
+                    throw new Error(error.response.data.message || 'Erro ao realizar login.');
+                } else if (error.request) {
+                    throw new Error('Nenhuma resposta recebida do servidor.');
+                } 
+
+                throw new Error('Erro ao configurar a requisição de login.');
+            } 
+            
+            throw new Error('Ocorreu um erro desconhecido durante o login.');
+        }
     }
 };

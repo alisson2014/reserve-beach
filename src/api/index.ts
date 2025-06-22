@@ -1,18 +1,27 @@
-import { User } from "../types/user";
+import axios, {
+  type AxiosError,
+  type InternalAxiosRequestConfig,
+} from 'axios';
+import { AuthService } from '../service';
 
-const api: User = {
-    id: 1,
-    name: "TFake User",
-    email: "test-user@gmail.com",
-    password: "12345678",
-};
-
-Object.freeze(api);
-
-const fakeLogin: Promise<User> = new Promise((resolve) => {
-    setTimeout(() => {
-        resolve(api)
-    }, 3000);
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
-export default fakeLogin;
+api.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    const { token } = AuthService.getInstance();
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    
+    return config;
+  },
+  (error: AxiosError) => Promise.reject(error)
+);
+
+export default api;

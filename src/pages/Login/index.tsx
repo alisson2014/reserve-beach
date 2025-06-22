@@ -4,12 +4,16 @@ import { useNavigate } from "react-router-dom";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { LoginCard, PasswordInput, EmailInput } from "../../components";
 import LoginTemplate from "../LoginTemplate";
-import { FakeService } from "../../service";
+import { AuthService } from "../../service";
 import { ILoginForm } from "../../types/forms";
 import { CustomLink } from "./styles";
+import { useToast } from "../../contexts";
 
 export default function Login(): JSX.Element {
+    const { showToast } = useToast();
+
     const navigate = useNavigate(); 
+    const authService = AuthService.getInstance();
 
     const { register, handleSubmit, formState: { errors, isValid }, watch } = useForm<ILoginForm>({
         mode: "onSubmit", 
@@ -21,13 +25,15 @@ export default function Login(): JSX.Element {
 
     const onSubmit: SubmitHandler<ILoginForm> = async () => {
         try {
-            const response = await FakeService.make(email, password);
+            const { message } = await authService.login(email, password);
 
-            if(!response) return;
+            if(message) {
+                showToast(message, "success");
+            }
             
             navigate("/");
         } catch (error) {
-            alert("Credenciais inválidas");
+            showToast(error instanceof Error ? error.message : "Erro ao realizar login", "error");
             console.error("Login failed", error);
         }
     };
