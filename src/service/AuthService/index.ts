@@ -1,13 +1,19 @@
 import axios from "axios";
 import api from "../../api";
-import { ILoginResponse } from "./types";
+import { ILoginResponse, IUser } from "./types";
 
 export class AuthService {
     private static instance: AuthService;
     private _token: string | null = null;
+    private _user: IUser | null = null;
 
     private constructor() {
-        this._token = localStorage.getItem('token');
+        const token = localStorage.getItem('token');
+
+        if (!token) return;
+
+        this._token = token;
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     }
 
     public static getInstance(): AuthService {
@@ -22,6 +28,10 @@ export class AuthService {
         return this._token;
     }
 
+    public get user(): IUser | null {
+        return this._user;
+    }
+
     public set token(value: string | null) {
         this._token = value;
         if (value) {
@@ -31,12 +41,43 @@ export class AuthService {
         }
     }
 
-    public clearToken(): void {
-        this.token = null;
+    private setAuthData(token: string | null, user: IUser | null): void {
+        this._token = token;
+        this._user = user;
+
+        if (token) {
+            localStorage.setItem('token', token);
+            api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        } else {
+            localStorage.removeItem('token');
+            delete api.defaults.headers.common['Authorization'];
+        }
+    }
+
+    public logout(): null {
+        this.setAuthData(null, null); 
+        return null;
     }
 
     public isAuthenticated(): boolean {
-        return this._token !== null;
+        return this._token !== null && this._user !== null;
+    }
+
+    public async validateToken(): Promise<IUser | null> {
+        if (!this._token) return null;
+
+        try {
+            const { data: { user, valid } } = await api.get('/user/token/validate'); 
+
+            if(!valid) {
+                return this.logout();
+            }
+
+            this.setAuthData(this._token, user);
+            return user;
+        } catch (error) {
+            return this.logout();
+        }
     }
 
     public async login(email: string, password: string): Promise<ILoginResponse> {
@@ -49,7 +90,7 @@ export class AuthService {
             
             return { message, user };
         } catch (error) {
-            this.clearToken();
+            this.logout();
 
             if (axios.isAxiosError(error)) {
                 if (error.response) {

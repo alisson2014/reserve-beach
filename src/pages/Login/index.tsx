@@ -7,13 +7,13 @@ import LoginTemplate from "../LoginTemplate";
 import { AuthService } from "../../service";
 import { ILoginForm } from "../../types/forms";
 import { CustomLink } from "./styles";
-import { useToast } from "../../contexts";
+import { useAuth, useToast } from "../../contexts";
 
 export default function Login(): JSX.Element {
+    const { login } = useAuth();
     const { showToast } = useToast();
 
     const navigate = useNavigate(); 
-    const authService = AuthService.getInstance();
 
     const { register, handleSubmit, formState: { errors, isValid }, watch } = useForm<ILoginForm>({
         mode: "onSubmit", 
@@ -25,7 +25,7 @@ export default function Login(): JSX.Element {
 
     const onSubmit: SubmitHandler<ILoginForm> = async () => {
         try {
-            const { message } = await authService.login(email, password);
+            const { message } = await login(email, password);
 
             if(message) {
                 showToast(message, "success");

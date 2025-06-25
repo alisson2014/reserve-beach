@@ -1,18 +1,9 @@
-export type AuthContextType = {
-    user: User | null;
-    setUser: (user: User | null) => void;
-};
+import { ILoginResponse, IUser } from "../../service/AuthService/types";
 
-export type User = {
-    id: number;
-    name: string;
-    lastName: string;
-    email: string;
-    status: string;
-    phone: string | null;
-    cpf: string | null;
-    birthDate: string | null;
-    createdAt: string | null;
-    updatedAt: string | null;
-    roles: string[];
+export interface IAuthContext {
+    isAuthenticated: boolean;
+    user: IUser | null;
+    isLoading: boolean; // Para mostrar um loader enquanto valida o token
+    login: (email: string, password: string) => Promise<ILoginResponse>;
+    logout: () => void;
 };

@@ -1,14 +1,14 @@
 import { createContext, useContext } from "react";
-import { AuthContextType } from "./types";
+import { IAuthContext } from "./types";
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<IAuthContext>({} as IAuthContext);
 
-export const useAuth = (): AuthContextType => {
+export const useAuth = (): IAuthContext => {
     const context = useContext(AuthContext);
 
     if (!context) {
-        throw new Error('useToast must be used within a AuthProvider');
+        throw new Error('useAuth deve ser usado dentro de um AuthProvider');
     }
-    
+
     return context;
 };
