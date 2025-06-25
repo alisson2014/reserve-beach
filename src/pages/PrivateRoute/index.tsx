@@ -1,24 +1,32 @@
 import { JSX } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../../contexts";
-
-type Role = 'ROLE_USER' | 'ROLE_ADMIN' | 'ROLE_SUPER_ADMIN';
+import { Roles } from "../../types/user";
+import { CircularProgress, Box } from '@mui/material';
 
 interface PrivateRouteProps {
     children: JSX.Element;
-    roles: Role[];
+    roles: Roles;
 };
 
 export default function PrivateRoute({ children, roles = [] }: PrivateRouteProps) {
-    const { isAuthenticated, isLoading } = useAuth();
+    const { isAuthenticated, isLoading, user } = useAuth();
 
     if (isLoading) {
-        return <div>Carregando...</div>; // Ou um componente de Spinner
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+                <CircularProgress />
+            </Box>
+        );
     }
 
-    if(roles.length <= 0) {
-        throw new Error("PrivateRoute requires at least one role to be specified.");
+    if (!isAuthenticated) {
+        return <Navigate to="/login" replace />;
     }
 
-    return isAuthenticated ? children : <Navigate to="/login" replace />;
+    if (!user?.roles.some(userRole => roles.includes(userRole))) {
+        return <Navigate to="/unauthorized" replace />;
+    }
+
+    return children;
 };

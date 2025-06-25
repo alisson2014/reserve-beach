@@ -1,10 +1,9 @@
 import { JSX } from "react";
-import { Button, Checkbox, FormControlLabel, FormGroup, Typography } from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { LoginCard, PasswordInput, EmailInput } from "../../components";
 import LoginTemplate from "../LoginTemplate";
-import { AuthService } from "../../service";
 import { ILoginForm } from "../../types/forms";
 import { CustomLink } from "./styles";
 import { useAuth, useToast } from "../../contexts";
@@ -21,17 +20,20 @@ export default function Login(): JSX.Element {
 
     const email = watch("email", ""); 
     const password = watch("password", ""); 
-    const rememberMe = watch("rememberMe", false);
 
     const onSubmit: SubmitHandler<ILoginForm> = async () => {
         try {
-            const { message } = await login(email, password);
+            const { message, user } = await login(email, password);
 
             if(message) {
                 showToast(message, "success");
             }
             
-            navigate("/");
+            if(user.roles.includes("ROLE_ADMIN") || user.roles.includes("ROLE_SUPER_ADMIN")) {
+                navigate("/admin");
+            } else {
+                navigate("/");
+            }
         } catch (error) {
             showToast(error instanceof Error ? error.message : "Erro ao realizar login", "error");
             console.error("Login failed", error);
@@ -56,6 +58,7 @@ export default function Login(): JSX.Element {
 
                 <CustomLink 
                     title="Clique aqui para realizar a recuperação da senha" 
+                    aria-label="Clique aqui para realizar a recuperação da senha"
                     to="/forgotPassword"
                 >
                     Esqueceu a senha ?
@@ -70,19 +73,6 @@ export default function Login(): JSX.Element {
                 >
                     Logar
                 </Button>
-
-                <FormGroup>
-                    <FormControlLabel 
-                        control={
-                            <Checkbox 
-                                {...register("rememberMe")} 
-                                defaultChecked={rememberMe} 
-                            />
-                        } 
-                        label="Lembrar minha senha" 
-                        title="Caso selecionado o sistema manterá você logado" 
-                    />
-                </FormGroup>
 
                 <CustomLink
                     title="Clique aqui para se cadastrar no sistema" 

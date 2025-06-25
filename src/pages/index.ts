@@ -3,5 +3,6 @@ import NotFound from "./NotFound";
 import Login from "./Login";
 import Register from "./Register";
 import PrivateRoute from "./PrivateRoute";
+import Unauthorized from "./Unauthorized";
 
-export { Home, NotFound, Login, Register, PrivateRoute };
+export { Home, NotFound, Login, Register, PrivateRoute, Unauthorized };

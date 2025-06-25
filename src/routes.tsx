@@ -1,5 +1,5 @@
 import { createBrowserRouter } from 'react-router-dom';
-import { Home, Login, NotFound, PrivateRoute, Register } from './pages';
+import { Home, Login, NotFound, PrivateRoute, Register, Unauthorized } from './pages';
 import { Dashboard, Layout, ManageCourts } from './pages/Admin';
 
 const router = createBrowserRouter([
@@ -18,6 +18,10 @@ const router = createBrowserRouter([
     { 
         path: "/register", 
         element: <Register />
+    },
+    {
+        path: "/unauthorized",
+        element: <Unauthorized />
     },
     {
         path: "/admin",

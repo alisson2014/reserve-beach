@@ -1,10 +1,6 @@
-export interface IUser {
-    id: number;
-    name: string;
-    email: string;
-};
+import { User } from "../../types/user";
 
 export interface ILoginResponse {
-    user: IUser;
+    user: User;
     message: string;
 };

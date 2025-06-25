@@ -1,15 +1,16 @@
 import { useState, useEffect, useMemo, JSX, ReactNode } from 'react';
-import { ILoginResponse, IUser } from '../../service/AuthService/types';
+import { ILoginResponse } from '../../service/AuthService/types';
 import { AuthService } from '../../service';
 import { AuthContext } from './useAuth';
 import { useToast } from '../ToastContext/useToast';
+import { User } from '../../types/user';
 
 const authService = AuthService.getInstance();
 
 export default function AuthProvider({ children }: { children: ReactNode }): JSX.Element {
     const { showToast } = useToast();
 
-    const [user, setUser] = useState<IUser | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true); 
 
     useEffect(() => {
@@ -33,6 +34,8 @@ export default function AuthProvider({ children }: { children: ReactNode }): JSX
             showToast(error instanceof Error ? error.message : "Erro ao realizar login", "error");
             console.error("Login failed", error);
         }
+
+        return {} as ILoginResponse;
     };
 
     const logout = (): void => {

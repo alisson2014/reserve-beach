@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { LoginCard, PasswordInput, EmailInput} from "../../components";
 import { ILoginForm } from "../../types/forms";
-import { Button, Checkbox, FormControlLabel, FormGroup, Typography } from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import LoginTemplate from "../LoginTemplate";
 import { PersonInput } from "../../components/CustomInputs";
 import { useToast } from "../../contexts";
 import { RegisterService } from "../../service";
+import { CustomLink } from "../Login/styles";
 
 export default function Register(): JSX.Element {
     const { showToast } = useToast();
@@ -22,7 +23,6 @@ export default function Register(): JSX.Element {
     const email = watch("email", "");
     const password = watch("password", "");
     const confirmPassword = watch("confirmPassword", "");
-    const rememberMe = watch("rememberMe", false);
     const name = watch("name", "");
     const lastName = watch("lastName", "");
 
@@ -88,18 +88,13 @@ export default function Register(): JSX.Element {
                     Registrar
                 </Button>
 
-                <FormGroup>
-                    <FormControlLabel 
-                        control={
-                            <Checkbox 
-                                {...register("rememberMe")} 
-                                defaultChecked={rememberMe} 
-                            />
-                        } 
-                        label="Manter a conta conectado" 
-                        title="Caso selecionado o sistema manterá você logado" 
-                    />
-                </FormGroup>
+                <CustomLink
+                    title="Já possui uma conta? Faça login" 
+                    aria-label="Já possui uma conta? Faça login"
+                    to="/login"
+                >
+                    Já possui uma conta? Faça login
+                </CustomLink>
             </LoginCard>
         </LoginTemplate>
     );
