@@ -7,8 +7,7 @@ export default function ToastProvider({ children }: ToastProviderProps): JSX.Ele
     const [toast, setToast] = useState<IToast>({
         open: false,
         message: '',
-        severity: 'success',
-        autoHideDuration: 3500,
+        severity: 'success'
     });
 
     const showToast = (message: string, severity: ToastSeverity = 'success'): void => setToast({ open: true, message, severity });
@@ -19,7 +18,7 @@ export default function ToastProvider({ children }: ToastProviderProps): JSX.Ele
         <ToastContext.Provider value={{ toast, showToast, closeToast }}>
             {children}
             {toast.open && (
-                <Snackbar open={toast.open} autoHideDuration={toast.autoHideDuration} onClose={closeToast}>
+                <Snackbar open={toast.open} autoHideDuration={3000} onClose={closeToast}>
                     <Alert onClose={closeToast} severity={toast.severity} variant="filled" sx={{ width: '100%' }}>
                         {toast.message}
                     </Alert>

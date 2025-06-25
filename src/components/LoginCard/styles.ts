@@ -1,16 +1,19 @@
 import { styled } from "@mui/material";
 
-export const FormLoginCard = styled("form")({
+export const FormLoginCard = styled("form")(({ theme }) => ({
   background: "rgba(65, 64, 64, 0.65)",
-  padding: "40px",
   borderRadius: "20px",
   boxShadow: "0 8px 32px rgba(0, 0, 0, 0.6)",
   backdropFilter: "blur(10px)",
   WebkitBackdropFilter: "blur(10px)",
+  color: "white",
   display: "flex",
   flexDirection: "column",
-  alignItems: "right",
   gap: "16px",
-  width: "434px",
-  color: "white",
-});
+  width: '100%',
+  padding: theme.spacing(3),
+  [theme.breakpoints.up('sm')]: {
+      maxWidth: '434px',
+      padding: '40px',
+  },
+}));

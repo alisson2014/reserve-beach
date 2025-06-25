@@ -1,14 +1,19 @@
 import { JSX } from "react";
 import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { LoginCard, PasswordInput, EmailInput} from "../../components";
 import { ILoginForm } from "../../types/forms";
 import { Button, Checkbox, FormControlLabel, FormGroup, Typography } from "@mui/material";
 import LoginTemplate from "../LoginTemplate";
 import { PersonInput } from "../../components/CustomInputs";
+import { useToast } from "../../contexts";
+import { RegisterService } from "../../service";
 
 export default function Register(): JSX.Element {
+    const { showToast } = useToast();
+
     const navigate = useNavigate(); 
+    const registerService = RegisterService.getInstance();
 
     const { register, handleSubmit, formState: { errors, isValid }, watch } = useForm<ILoginForm>({
         mode: "onSubmit", 
@@ -21,8 +26,19 @@ export default function Register(): JSX.Element {
     const name = watch("name", "");
     const lastName = watch("lastName", "");
 
-    const onSubmit = (data: ILoginForm) => {
-        console.log(data);
+    const onSubmit: SubmitHandler<ILoginForm> = async data => {
+        try {
+            const { message } = await registerService.save(data);
+
+            if(message) {
+                showToast(message, "success");
+            }
+            
+            navigate("/login");
+        } catch (error) {
+            showToast(error instanceof Error ? error.message : "Erro ao realizar cadastro", "error");
+            console.error("Login failed", error);
+        }
     };
 
     return (

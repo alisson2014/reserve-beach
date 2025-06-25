@@ -26,6 +26,14 @@ const router = createBrowserRouter([
             </PrivateRoute>
         )
     },
+    {
+        path: "/admin",
+        element: (
+            <PrivateRoute>
+                <h1>Admin</h1>
+            </PrivateRoute>
+        )
+    },
     { path: "*", element: <NotFound /> }
 ]);
 

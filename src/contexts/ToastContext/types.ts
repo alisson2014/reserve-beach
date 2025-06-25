@@ -6,7 +6,6 @@ export interface IToast {
     open: boolean;
     message: string;
     severity: ToastSeverity;
-    autoHideDuration?: number;
 };
 
 export interface ToastProviderProps {

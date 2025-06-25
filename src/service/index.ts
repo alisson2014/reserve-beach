@@ -1,4 +1,4 @@
 import { AuthService } from "./AuthService";
-import { FakeService } from "./FakeService";
+import { RegisterService } from "./RegisterService";
 
-export { FakeService, AuthService };
+export { AuthService, RegisterService };
