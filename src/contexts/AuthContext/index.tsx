@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, JSX, ReactNode } from 'react';
+import { useState, useEffect, useMemo, JSX, ReactNode, useCallback } from 'react';
 import { ILoginResponse } from '../../service/AuthService/types';
 import { AuthService } from '../../service';
 import { AuthContext } from './useAuth';
@@ -25,23 +25,25 @@ export default function AuthProvider({ children }: { children: ReactNode }): JSX
         initAuth();
     }, []);
 
-    const login = async (email: string, password: string): Promise<ILoginResponse> => {
+    const login = useCallback(async (email: string, password: string): Promise<ILoginResponse> => {
         try {
             const response = await authService.login(email, password);
-            setUser(response.user);
+            if(response.status) {
+                setUser(response.user);
+            }
+
             return response;
         } catch (error) {
             showToast(error instanceof Error ? error.message : "Erro ao realizar login", "error");
             console.error("Login failed", error);
+            return {} as ILoginResponse;
         }
+    }, [showToast]);
 
-        return {} as ILoginResponse;
-    };
-
-    const logout = (): void => {
+    const logout = useCallback((): void => {
         authService.logout();
         setUser(null);
-    };
+    }, []);
 
     const value = useMemo(() => ({
         isAuthenticated: !!user,
@@ -49,7 +51,7 @@ export default function AuthProvider({ children }: { children: ReactNode }): JSX
         isLoading,
         login,
         logout
-    }), [user, isLoading]);
+    }), [user, isLoading, login, logout]);
 
     return (
         <AuthContext.Provider value={value}>

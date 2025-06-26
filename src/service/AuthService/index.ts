@@ -1,11 +1,12 @@
 import axios from "axios";
 import api from "../../api";
-import { ILoginResponse, IUser } from "./types";
+import { ILoginResponse } from "./types";
+import { User } from "../../types/user";
 
 export class AuthService {
     private static instance: AuthService;
     private _token: string | null = null;
-    private _user: IUser | null = null;
+    private _user: User | null = null;
 
     private constructor() {
         const token = localStorage.getItem('token');
@@ -28,7 +29,7 @@ export class AuthService {
         return this._token;
     }
 
-    public get user(): IUser | null {
+    public get user(): User | null {
         return this._user;
     }
 
@@ -41,7 +42,7 @@ export class AuthService {
         }
     }
 
-    private setAuthData(token: string | null, user: IUser | null): void {
+    private setAuthData(token: string | null, user: User | null): void {
         this._token = token;
         this._user = user;
 
@@ -63,7 +64,7 @@ export class AuthService {
         return this._token !== null && this._user !== null;
     }
 
-    public async validateToken(): Promise<IUser | null> {
+    public async validateToken(): Promise<User | null> {
         if (!this._token) return null;
 
         try {
@@ -76,6 +77,7 @@ export class AuthService {
             this.setAuthData(this._token, user);
             return user;
         } catch (error) {
+            console.error("Falha ao validar o token:", error); 
             return this.logout();
         }
     }
@@ -88,7 +90,7 @@ export class AuthService {
                 this.token = token;
             } 
             
-            return { message, user };
+            return { message, user, status };
         } catch (error) {
             this.logout();
 

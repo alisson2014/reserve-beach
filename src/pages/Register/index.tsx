@@ -1,9 +1,9 @@
 import { JSX } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm, SubmitHandler } from "react-hook-form";
-import { LoginCard, PasswordInput, EmailInput} from "../../components";
+import { LoginCard, PasswordInput, EmailInput, LoadingButton} from "../../components";
 import { ILoginForm } from "../../types/forms";
-import { Button, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import LoginTemplate from "../LoginTemplate";
 import { PersonInput } from "../../components/CustomInputs";
 import { useToast } from "../../contexts";
@@ -16,7 +16,7 @@ export default function Register(): JSX.Element {
     const navigate = useNavigate(); 
     const registerService = RegisterService.getInstance();
 
-    const { register, handleSubmit, formState: { errors, isValid }, watch } = useForm<ILoginForm>({
+    const { register, handleSubmit, formState: { errors, isValid, isSubmitting }, watch } = useForm<ILoginForm>({
         mode: "onSubmit", 
     });
 
@@ -28,7 +28,14 @@ export default function Register(): JSX.Element {
 
     const onSubmit: SubmitHandler<ILoginForm> = async data => {
         try {
-            const { message } = await registerService.save(data);
+            const registerPromise = registerService.save(data);
+
+            const [registerResult] = await Promise.all([
+                registerPromise,
+                new Promise(resolve => setTimeout(resolve, 1000))
+            ]);
+
+            const { message } = registerResult;
 
             if(message) {
                 showToast(message, "success");
@@ -78,15 +85,17 @@ export default function Register(): JSX.Element {
                     name="confirmPassword"
                     label="Confirmar Senha"
                 />
-                <Button 
+
+                <LoadingButton
                     variant="contained"
                     aria-label="Realizar o registro com as credenciais"
                     title="Realizar registro com as credenciais"
                     type="submit"
                     disabled={!isValid}
+                    loading={isSubmitting}
                 >
                     Registrar
-                </Button>
+                </LoadingButton>
 
                 <CustomLink
                     title="Já possui uma conta? Faça login" 

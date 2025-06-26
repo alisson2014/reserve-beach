@@ -1,8 +1,8 @@
 import { JSX } from "react";
-import { Button, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useForm, SubmitHandler } from "react-hook-form";
-import { LoginCard, PasswordInput, EmailInput } from "../../components";
+import { LoginCard, PasswordInput, EmailInput, LoadingButton } from "../../components";
 import LoginTemplate from "../LoginTemplate";
 import { ILoginForm } from "../../types/forms";
 import { CustomLink } from "./styles";
@@ -14,7 +14,7 @@ export default function Login(): JSX.Element {
 
     const navigate = useNavigate(); 
 
-    const { register, handleSubmit, formState: { errors, isValid }, watch } = useForm<ILoginForm>({
+    const { register, handleSubmit, formState: { errors, isValid, isSubmitting }, watch } = useForm<ILoginForm>({
         mode: "onSubmit", 
     });
 
@@ -22,21 +22,25 @@ export default function Login(): JSX.Element {
     const password = watch("password", ""); 
 
     const onSubmit: SubmitHandler<ILoginForm> = async () => {
-        try {
-            const { message, user } = await login(email, password);
+        const loginPromise = login(email, password);
 
-            if(message) {
-                showToast(message, "success");
-            }
-            
-            if(user.roles.includes("ROLE_ADMIN") || user.roles.includes("ROLE_SUPER_ADMIN")) {
-                navigate("/admin");
-            } else {
-                navigate("/");
-            }
-        } catch (error) {
-            showToast(error instanceof Error ? error.message : "Erro ao realizar login", "error");
-            console.error("Login failed", error);
+        const [loginResult] = await Promise.all([
+            loginPromise,
+            new Promise(resolve => setTimeout(resolve, 1000))
+        ]);
+
+        const { message, user, status } = loginResult;
+
+        if(!status) return;
+
+        if(message) {
+            showToast(message, "success");
+        }
+        
+        if(user?.roles.includes("ROLE_ADMIN") || user?.roles.includes("ROLE_SUPER_ADMIN")) {
+            navigate("/admin");
+        } else {
+            navigate("/");
         }
     };
 
@@ -64,15 +68,16 @@ export default function Login(): JSX.Element {
                     Esqueceu a senha ?
                 </CustomLink> 
 
-                <Button 
+                <LoadingButton
                     variant="contained"
                     aria-label="Realizar login com as credenciais"
                     title="Realizar login com as credenciais"
                     type="submit"
+                    loading={isSubmitting}
                     disabled={!isValid}
                 >
                     Logar
-                </Button>
+                </LoadingButton>
 
                 <CustomLink
                     title="Clique aqui para se cadastrar no sistema" 
