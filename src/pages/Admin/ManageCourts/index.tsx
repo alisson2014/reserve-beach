@@ -1,4 +1,4 @@
-import { JSX, useState, useCallback } from "react";
+import { JSX, useState, useEffect, useCallback } from "react";
 import { 
     Box, 
     TextField, 
@@ -22,39 +22,72 @@ import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import CancelIcon from '@mui/icons-material/Cancel';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ModeEditOutlineIcon from '@mui/icons-material/ModeEditOutline';
+import PublishedWithChangesIcon from '@mui/icons-material/PublishedWithChanges';
 import { BasePaper } from "../../../components";
 import { Court } from "../../../types/court";
 import { getStatusChipColorFunction, handleCheckboxClickFunction, handleClickFunction, isSelectedFunction } from "./types";
 import { MobileCard } from "./components";
-
-const mockData: Court[] = [
-    { id: 1, name: 'Quadra de Areia 1', date: '25/06/2025', time: '18:00 - 19:00', schedulingFee: 'R$ 60,00', active: true },
-    { id: 2, name: 'Quadra Poliesportiva A', date: '25/06/2025', time: '19:00 - 20:00', schedulingFee: 'R$ 80,00', active: false },
-    { id: 3, name: 'Quadra de Tênis', date: '26/06/2025', time: '09:00 - 10:00', schedulingFee: 'R$ 75,00', active: true },
-    { id: 4, name: 'Quadra de Areia 2', date: '26/06/2025', time: '10:00 - 11:00', schedulingFee: 'R$ 60,00', active: false },
-    { id: 5, name: 'Quadra Poliesportiva B', date: '27/06/2025', time: '20:00 - 21:00', schedulingFee: 'R$ 80,00', active: false },
-];
+import { CourtService } from "../../../service";
 
 const getStatusChipColor: getStatusChipColorFunction = active => active ? 'success' : 'error';
 
 export function ManageCourts(): JSX.Element {
     const [selected, setSelected] = useState<readonly number[]>([]);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [courts, setCourts] = useState<readonly Court[]>([]);
+    const [searchTerm, setSearchTerm] = useState<string>('');
 
     const theme = useTheme();
-
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const courtService = CourtService.getInstance();
+
+    const fetchCourts = useCallback(async () => {
+        try {
+            const courts = await courtService.findAll(searchTerm);
+            setCourts(courts);
+        } catch (error) {
+            console.error('Erro ao buscar quadras:', error);
+            // Aqui você pode adicionar lógica para lidar com erros, como exibir uma notificação
+        }
+    }, [courtService, searchTerm]);
+
+    const setActive = useCallback(async (active: boolean) => {
+        try {
+            await courtService.setActive(selected, active);
+            setSelected([]);
+            await fetchCourts(); 
+        } catch (error) {
+            console.error('Erro ao desativar quadras:', error);
+            // Aqui você pode adicionar lógica para lidar com erros, como exibir uma notificação
+        }
+    }, [courtService, selected, fetchCourts]);
+
+    const handleDelete = useCallback(async (id: number) => {
+        try {
+            await courtService.delete(id);
+            setSelected(selected.filter(item => item !== id));
+            await fetchCourts(); 
+        } catch (error) {
+            console.error('Erro ao excluir quadra:', error);
+            // Aqui você pode adicionar lógica para lidar com erros, como exibir uma notificação
+        }
+    }, [courtService, fetchCourts, selected]);
 
     const handleSelectAllClick = useCallback((event: React.ChangeEvent<HTMLInputElement>): void => {
         if (event.target.checked) {
-            const newSelecteds = mockData.map((n) => n.id);
+            const newSelecteds = courts.map((n) => n.id);
             setSelected(newSelecteds);
             return;
         }
         setSelected([]);
-    }, []);
+    }, [courts]);
 
-    const handleClick: handleClickFunction = useCallback(event => setAnchorEl(event.currentTarget), []);
+    const handleClick: handleClickFunction = useCallback(async (event, id) => {
+        setAnchorEl(event.currentTarget);
+        await handleDelete(id);
+    }, [handleDelete]);
 
     const handleClose = useCallback((): void => setAnchorEl(null), []);
 
@@ -79,6 +112,10 @@ export function ManageCourts(): JSX.Element {
 
     const isSelected: isSelectedFunction = useCallback(id => selected.indexOf(id) !== -1, [selected]);
 
+    useEffect(() => {
+        fetchCourts();
+    }, [fetchCourts]);
+
     return (
         <BasePaper>
             <Box sx={{ 
@@ -95,16 +132,29 @@ export function ManageCourts(): JSX.Element {
                     size="small"
                     sx={{ flexGrow: 1, maxWidth: { sm: '400px' } }} 
                     InputProps={{ endAdornment: <InputAdornment position="end"><SearchIcon /></InputAdornment> }}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                <Box sx={{ display: 'flex', gap: 2, justifyContent: { xs: 'flex-end', sm: 'initial' } }}> 
+                <Box sx={{ display: 'flex', gap: 2, justifyContent: { xs: 'flex-end', sm: 'initial' }, flexDirection: { xs: 'column', sm: 'row' } }}> 
                     <Button 
                         variant="contained" 
                         startIcon={<CancelIcon />}
                         color="error"
                         title="Realizar desativação das quadras selecionadas"
+                        onClick={() => setActive(false)}
                         disabled={selected.length === 0}
                     >
                         Desativar ({selected.length})
+                    </Button>
+                    <Button 
+                        variant="contained" 
+                        startIcon={<PublishedWithChangesIcon />}
+                        color="success"
+                        title="Realizar ativação das quadras selecionadas"
+                        onClick={() => setActive(true)}
+                        disabled={selected.length === 0}
+                    >
+                        Ativar ({selected.length})
                     </Button>
                     <Button 
                         variant="contained" 
@@ -118,7 +168,7 @@ export function ManageCourts(): JSX.Element {
 
             {isMobile ? (
                 <Box>
-                    {mockData.map(row => (
+                    {courts.map(row => (
                         <MobileCard 
                             isSelected={isSelected}
                             handleCheckboxClick={handleCheckboxClick}
@@ -136,21 +186,21 @@ export function ManageCourts(): JSX.Element {
                                 <TableCell padding="checkbox">
                                     <Checkbox
                                         color="primary"
-                                        indeterminate={selected.length > 0 && selected.length < mockData.length}
-                                        checked={mockData.length > 0 && selected.length === mockData.length}
+                                        indeterminate={selected.length > 0 && selected.length < courts.length}
+                                        checked={courts.length > 0 && selected.length === courts.length}
                                         onChange={handleSelectAllClick}
                                     />
                                 </TableCell>
                                 <TableCell sx={{ fontWeight: 'bold' }}>Nome</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }}>Data</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }}>Horário</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>Capacidade</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>Descrição</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold' }}>Preço</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>Status</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>Ações</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {mockData.map((row) => {
+                            {courts.map(row => {
                                 const isItemSelected = isSelected(row.id);
                                 return (
                                     <TableRow key={row.id} hover selected={isItemSelected}>
@@ -162,14 +212,16 @@ export function ManageCourts(): JSX.Element {
                                             />
                                         </TableCell>
                                         <TableCell>{row.name}</TableCell>
-                                        <TableCell>{row.date}</TableCell>
-                                        <TableCell>{row.time}</TableCell>
-                                        <TableCell>{row.schedulingFee}</TableCell>
+                                        <TableCell>{row.capacity}</TableCell>
+                                        <TableCell>{row.description}</TableCell>
+                                        <TableCell>
+                                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(row.schedulingFee)}
+                                        </TableCell>
                                         <TableCell align="center">
                                             <Chip label={row.active ? 'Ativo' : 'Inativo'} color={getStatusChipColor(row.active)} size="small"/>
                                         </TableCell>
                                         <TableCell align="center">
-                                            <IconButton onClick={e => handleClick(e)}>
+                                            <IconButton onClick={e => handleClick(e, row.id)}>
                                                 <MoreVertIcon />
                                             </IconButton>
                                         </TableCell>
@@ -186,8 +238,14 @@ export function ManageCourts(): JSX.Element {
                 open={Boolean(anchorEl)}
                 onClose={handleClose}
             >
-                <MenuItem onClick={handleClose}>Editar</MenuItem>
-                <MenuItem onClick={handleClose}>Apagar</MenuItem>
+                <MenuItem onClick={handleClose} title="Ir para edição da quadra" sx={{ color: 'primary.main' }}>
+                    <ModeEditOutlineIcon fontSize="small" />
+                    &ensp;Editar
+                </MenuItem>
+                <MenuItem onClick={handleClose} title="Excluir a quadra selecionada" sx={{ color: 'error.main' }}>
+                    <DeleteIcon fontSize="small" />
+                    &ensp;Apagar
+                </MenuItem>
             </Menu>
         </BasePaper>
     );
