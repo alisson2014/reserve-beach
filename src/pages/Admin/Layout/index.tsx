@@ -25,7 +25,7 @@ import { useAuth } from '../../../contexts';
 const drawerWidth = 256;
 const routeTitles: { [key: string]: string } = {
     '/admin': 'Dashboard',
-    '/admin/courts': 'Quadras',
+    '/admin/courts': 'Gerenciamento de Quadra',
 };
 
 export function Layout(): JSX.Element {
@@ -181,6 +181,7 @@ export function Layout(): JSX.Element {
                     width: { md: `calc(100% - ${drawerWidth}px)` }
                 }}
             >
+                <Toolbar />
                 <Outlet />
             </Box>
         </Box>
