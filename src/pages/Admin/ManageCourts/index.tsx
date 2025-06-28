@@ -1,7 +1,6 @@
-import { JSX, useState, useEffect, useCallback } from "react";
+import { JSX, useState, useEffect, useCallback, useMemo } from "react";
 import { 
     Box, 
-    TextField, 
     Button, 
     Table,
     TableBody,
@@ -9,39 +8,49 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    InputAdornment,
     Chip,
     Checkbox,
     IconButton,
     Menu,
     MenuItem,
-    useMediaQuery, 
-    useTheme 
+    useMediaQuery,
+    Fab,
 } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
-import SearchIcon from '@mui/icons-material/Search';
 import CancelIcon from '@mui/icons-material/Cancel';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ModeEditOutlineIcon from '@mui/icons-material/ModeEditOutline';
-import PublishedWithChangesIcon from '@mui/icons-material/PublishedWithChanges';
-import { BasePaper } from "../../../components";
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import { BasePaper, ConfirmDialog, SearchField } from "../../../components";
 import { Court } from "../../../types/court";
-import { getStatusChipColorFunction, handleCheckboxClickFunction, handleClickFunction, isSelectedFunction } from "./types";
+import { handleCheckboxClickFunction, handleMoreOptionsFunction, isSelectedFunction } from "./types";
 import { MobileCard } from "./components";
 import { CourtService } from "../../../service";
+import { getStatusChipColor } from "./service";
 
-const getStatusChipColor: getStatusChipColorFunction = active => active ? 'success' : 'error';
+const courtService = CourtService.getInstance();
 
 export function ManageCourts(): JSX.Element {
     const [selected, setSelected] = useState<readonly number[]>([]);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [courts, setCourts] = useState<readonly Court[]>([]);
     const [searchTerm, setSearchTerm] = useState<string>('');
+    const [openedMenuId, setOpenedMenuId] = useState<number | null>(null);
+    const [openDialog, setOpenDialog] = useState<boolean>(false);
 
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-    const courtService = CourtService.getInstance();
+    const handleCloseDialog = useCallback((): void => {
+        setOpenDialog(false);
+    }, []);
+
+    const isMobile = useMediaQuery(theme => theme.breakpoints.down('sm'));
+
+    const isSelected: isSelectedFunction = useCallback(id => selected.indexOf(id) !== -1, [selected]);
+    const selectedCourts = useMemo(() => courts.filter(court => selected.includes(court.id)), [courts, selected]);
+    const activeSelected = useMemo(() => selectedCourts.filter(court => court.active), [selectedCourts]);
+    const inactiveSelected = useMemo(() => selectedCourts.filter(court => !court.active), [selectedCourts]);
+
+    const handleClose = useCallback((): void => setAnchorEl(null), []);
 
     const fetchCourts = useCallback(async () => {
         try {
@@ -49,31 +58,40 @@ export function ManageCourts(): JSX.Element {
             setCourts(courts);
         } catch (error) {
             console.error('Erro ao buscar quadras:', error);
-            // Aqui você pode adicionar lógica para lidar com erros, como exibir uma notificação
         }
-    }, [courtService, searchTerm]);
+    }, [searchTerm]);
 
-    const setActive = useCallback(async (active: boolean) => {
+    const setActive = useCallback(async (ids: number[], active: boolean): Promise<void> => {
         try {
-            await courtService.setActive(selected, active);
-            setSelected([]);
-            await fetchCourts(); 
+            await courtService.setActive(ids, active);
         } catch (error) {
-            console.error('Erro ao desativar quadras:', error);
-            // Aqui você pode adicionar lógica para lidar com erros, como exibir uma notificação
+            console.error('Erro ao atualizar quadras:', error);
+        } finally {
+            setSelected(selected => selected.filter(item => !ids.includes(item)))
+            await fetchCourts();
         }
-    }, [courtService, selected, fetchCourts]);
+    }, [fetchCourts]);
 
-    const handleDelete = useCallback(async (id: number) => {
+    const handleDelete = useCallback(async () => {
+        if (openedMenuId === null) return;
+
         try {
-            await courtService.delete(id);
-            setSelected(selected.filter(item => item !== id));
-            await fetchCourts(); 
+            await courtService.delete(openedMenuId);
         } catch (error) {
             console.error('Erro ao excluir quadra:', error);
-            // Aqui você pode adicionar lógica para lidar com erros, como exibir uma notificação
+        } finally {
+            setSelected(selected => selected.filter(item => item !== openedMenuId));
+            await fetchCourts();
+            handleCloseDialog();
+            handleClose();
         }
-    }, [courtService, fetchCourts, selected]);
+    }, [fetchCourts, handleClose, handleCloseDialog, openedMenuId]);
+
+    const handleEdit = useCallback(() => {
+        if (openedMenuId === null) return;
+        console.log(`Editar quadra ${openedMenuId}`);
+        // Implementar lógica de edição aqui
+    }, [openedMenuId]);
 
     const handleSelectAllClick = useCallback((event: React.ChangeEvent<HTMLInputElement>): void => {
         if (event.target.checked) {
@@ -84,12 +102,10 @@ export function ManageCourts(): JSX.Element {
         setSelected([]);
     }, [courts]);
 
-    const handleClick: handleClickFunction = useCallback(async (event, id) => {
+    const handleMoreOptions: handleMoreOptionsFunction = useCallback(async (event, id) => {
         setAnchorEl(event.currentTarget);
-        await handleDelete(id);
-    }, [handleDelete]);
-
-    const handleClose = useCallback((): void => setAnchorEl(null), []);
+        setOpenedMenuId(id);
+    }, []);
 
     const handleCheckboxClick: handleCheckboxClickFunction = useCallback((_event, id) => {
         const selectedIndex = selected.indexOf(id);
@@ -110,8 +126,6 @@ export function ManageCourts(): JSX.Element {
         setSelected(newSelected);
     }, [selected]);
 
-    const isSelected: isSelectedFunction = useCallback(id => selected.indexOf(id) !== -1, [selected]);
-
     useEffect(() => {
         fetchCourts();
     }, [fetchCourts]);
@@ -126,43 +140,38 @@ export function ManageCourts(): JSX.Element {
                 gap: 2,
                 mb: 3 
             }}>
-                <TextField
-                    label="Buscar pelo nome"
-                    variant="outlined"
-                    size="small"
-                    sx={{ flexGrow: 1, maxWidth: { sm: '400px' } }} 
-                    InputProps={{ endAdornment: <InputAdornment position="end"><SearchIcon /></InputAdornment> }}
+                <SearchField 
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={e => setSearchTerm(e.target.value)}
                 />
                 <Box sx={{ display: 'flex', gap: 2, justifyContent: { xs: 'flex-end', sm: 'initial' }, flexDirection: { xs: 'column', sm: 'row' } }}> 
                     <Button 
-                        variant="contained" 
+                        variant="outlined" 
                         startIcon={<CancelIcon />}
                         color="error"
                         title="Realizar desativação das quadras selecionadas"
-                        onClick={() => setActive(false)}
-                        disabled={selected.length === 0}
+                        onClick={() => setActive(activeSelected.map(c => c.id), false)}
+                        disabled={activeSelected.length === 0}
                     >
-                        Desativar ({selected.length})
+                        Desativar ({activeSelected.length})
                     </Button>
                     <Button 
-                        variant="contained" 
-                        startIcon={<PublishedWithChangesIcon />}
+                        variant="outlined" 
+                        startIcon={<CheckCircleOutlineIcon />}
                         color="success"
                         title="Realizar ativação das quadras selecionadas"
-                        onClick={() => setActive(true)}
-                        disabled={selected.length === 0}
+                        onClick={() => setActive(inactiveSelected.map(c => c.id), true)}
+                        disabled={inactiveSelected.length === 0}
                     >
-                        Ativar ({selected.length})
+                        Ativar ({inactiveSelected.length})
                     </Button>
-                    <Button 
-                        variant="contained" 
-                        startIcon={<AddIcon />}
+                    <Fab 
+                        variant="extended"
                         title="Adicionar nova quadra"
                     >
+                        <AddIcon sx={{ mr: 1 }} />
                         Adicionar
-                    </Button>
+                    </Fab>
                 </Box>
             </Box>
 
@@ -173,7 +182,7 @@ export function ManageCourts(): JSX.Element {
                             isSelected={isSelected}
                             handleCheckboxClick={handleCheckboxClick}
                             row={row}
-                            handleClick={handleClick}
+                            handleMoreOptions={handleMoreOptions}
                             getStatusChipColor={getStatusChipColor}
                         />
                     ))}
@@ -203,7 +212,7 @@ export function ManageCourts(): JSX.Element {
                             {courts.map(row => {
                                 const isItemSelected = isSelected(row.id);
                                 return (
-                                    <TableRow key={row.id} hover selected={isItemSelected}>
+                                    <TableRow key={row.id} hover onDoubleClick={handleEdit} selected={isItemSelected}>
                                         <TableCell padding="checkbox">
                                             <Checkbox
                                                 color="primary"
@@ -213,7 +222,7 @@ export function ManageCourts(): JSX.Element {
                                         </TableCell>
                                         <TableCell>{row.name}</TableCell>
                                         <TableCell>{row.capacity}</TableCell>
-                                        <TableCell>{row.description}</TableCell>
+                                        <TableCell>{row.description ?? "Sem descrição"}</TableCell>
                                         <TableCell>
                                             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(row.schedulingFee)}
                                         </TableCell>
@@ -221,7 +230,7 @@ export function ManageCourts(): JSX.Element {
                                             <Chip label={row.active ? 'Ativo' : 'Inativo'} color={getStatusChipColor(row.active)} size="small"/>
                                         </TableCell>
                                         <TableCell align="center">
-                                            <IconButton onClick={e => handleClick(e, row.id)}>
+                                            <IconButton onClick={e => handleMoreOptions(e, row.id)} title="Mais ações">
                                                 <MoreVertIcon />
                                             </IconButton>
                                         </TableCell>
@@ -238,15 +247,31 @@ export function ManageCourts(): JSX.Element {
                 open={Boolean(anchorEl)}
                 onClose={handleClose}
             >
-                <MenuItem onClick={handleClose} title="Ir para edição da quadra" sx={{ color: 'primary.main' }}>
+                <MenuItem onClick={handleEdit} title="Ir para edição da quadra">
                     <ModeEditOutlineIcon fontSize="small" />
                     &ensp;Editar
                 </MenuItem>
-                <MenuItem onClick={handleClose} title="Excluir a quadra selecionada" sx={{ color: 'error.main' }}>
+                <MenuItem 
+                    onClick={() => {
+                        handleClose();
+                        setOpenDialog(true);
+                    }} 
+                    title="Excluir a quadra selecionada"
+                >
                     <DeleteIcon fontSize="small" />
                     &ensp;Apagar
                 </MenuItem>
             </Menu>
+
+            <ConfirmDialog 
+                open={openDialog}
+                onClose={handleCloseDialog}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+                dialogTitle="Deseja realmente excluir a quadra selecionada?"
+                handleDisagree={handleCloseDialog}
+                handleAgree={handleDelete}
+            />
         </BasePaper>
     );
 };
