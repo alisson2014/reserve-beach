@@ -26,9 +26,10 @@ const drawerWidth = 256;
 const routeTitles: { [key: string]: string } = {
     '/admin': 'Dashboard',
     '/admin/courts': 'Gerenciamento de Quadra',
+    '/admin/courts/add': 'Adicionar Nova Quadra',
 };
 
-export function Layout(): JSX.Element {
+export default function Layout(): JSX.Element {
     const { logout } = useAuth();
 
     const [mobileOpen, setMobileOpen] = useState<boolean>(false);

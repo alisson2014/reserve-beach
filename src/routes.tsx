@@ -1,6 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { Home, Login, NotFound, PrivateRoute, Register, Unauthorized } from './pages';
-import { Dashboard, Layout, ManageCourts } from './pages/Admin';
+import { Dashboard, Layout, ManageCourts, AddCourt } from './pages/Admin';
 
 const router = createBrowserRouter([
     { 
@@ -37,8 +37,17 @@ const router = createBrowserRouter([
             },
             {
                 path: "courts",
-                element: <ManageCourts />
-            }
+                children: [
+                    {
+                        index: true,
+                        element: <ManageCourts />
+                    },
+                    {
+                        path: "add",
+                        element: <AddCourt />
+                    }
+                ]
+            },
         ]
     },
     { path: "*", element: <NotFound /> }

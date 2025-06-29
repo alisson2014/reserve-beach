@@ -28,10 +28,11 @@ import { handleCheckboxClickFunction, handleMoreOptionsFunction, isSelectedFunct
 import { MobileCard } from "./components";
 import { CourtService } from "../../../service";
 import { getStatusChipColor } from "./service";
+import { useNavigate } from "react-router-dom";
 
 const courtService = CourtService.getInstance();
 
-export function ManageCourts(): JSX.Element {
+export default function ManageCourts(): JSX.Element {
     const [selected, setSelected] = useState<readonly number[]>([]);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [courts, setCourts] = useState<readonly Court[]>([]);
@@ -44,6 +45,7 @@ export function ManageCourts(): JSX.Element {
     }, []);
 
     const isMobile = useMediaQuery(theme => theme.breakpoints.down('sm'));
+    const navigate = useNavigate();
 
     const isSelected: isSelectedFunction = useCallback(id => selected.indexOf(id) !== -1, [selected]);
     const selectedCourts = useMemo(() => courts.filter(court => selected.includes(court.id)), [courts, selected]);
@@ -92,6 +94,10 @@ export function ManageCourts(): JSX.Element {
         console.log(`Editar quadra ${openedMenuId}`);
         // Implementar lógica de edição aqui
     }, [openedMenuId]);
+
+    const handleAdd = useCallback(() => {
+        navigate('/admin/courts/add');
+    }, [navigate]);
 
     const handleSelectAllClick = useCallback((event: React.ChangeEvent<HTMLInputElement>): void => {
         if (event.target.checked) {
@@ -168,6 +174,7 @@ export function ManageCourts(): JSX.Element {
                     <Fab 
                         variant="extended"
                         title="Adicionar nova quadra"
+                        onClick={handleAdd}
                     >
                         <AddIcon sx={{ mr: 1 }} />
                         Adicionar

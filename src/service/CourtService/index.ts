@@ -72,4 +72,24 @@ export class CourtService {
             throw new Error('Ocorreu um erro desconhecido ao excluir a quadra.');
         }
     }
+
+    public async create(court: Court): Promise<Court> {
+        try {
+            const response = await api.post("/courts", court);
+            if (response.status !== 201) {
+                throw new Error('Erro ao criar a quadra.');
+            }
+            return response.data.data;
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                if (error.response) {
+                    throw new Error(error.response.data.message || 'Erro ao criar a quadra.');
+                } else if (error.request) {
+                    throw new Error('Nenhuma resposta recebida do servidor.');
+                }
+                throw new Error('Erro ao configurar a requisição de criação da quadra.');
+            }
+            throw new Error('Ocorreu um erro desconhecido ao criar a quadra.');
+        }
+    }
 }
