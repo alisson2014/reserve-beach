@@ -11,4 +11,4 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - REACT_APP_API_BASE_ENDPOINT=${REACT_APP_API_BASE_ENDPOINT}
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL}

@@ -1,7 +1,6 @@
 import { JSX, useState } from "react";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from "yup";
 import {
     Box,
     Button,
@@ -16,34 +15,24 @@ import {
 } from "@mui/material";
 import { Add as AddIcon } from '@mui/icons-material';
 import { BasePaper } from "../../../components";
-import { ObjectSchema } from "yup";
 import { ICourtForm } from "./types";
 import { CourtService } from "../../../service";
+import { schema } from "./service";
+import { CourtScheduleService } from "../../../service/CourtScheduleService";
 
 const courtService = CourtService.getInstance();
+const courtScheduleService = CourtScheduleService.getInstance();
 
-const schema: ObjectSchema<ICourtForm> = yup.object({
-    name: yup.string().required("O nome é obrigatório"),
-    description: yup.string().optional(), 
-    schedulingFee: yup.number().typeError("O preço deve ser um número").positive("O preço deve ser positivo").required("O preço do agendamento é obrigatório"),
-    capacity: yup.number().typeError("A capacidade deve ser um número").integer("A capacidade deve ser um número inteiro").positive("A capacidade deve ser positiva").required("A capacidade é obrigatória"),
-    imageUrl: yup.string()
-        .url("A URL da imagem não é válida")
-        .transform(value => value === '' ? undefined : value) 
-        .optional(),
-    weekdays: yup
-        .array()
-        .of(yup.string().required())
-        .min(1, "Selecione pelo menos um dia da semana")
-        .required("O campo de dias da semana é obrigatório"),
-    hours: yup
-        .array()
-        .of(yup.string().required())
-        .min(1, "Selecione pelo menos um horário")
-        .required("O campo de horários é obrigatório"),
-});
-
-const weekdays = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+const weekdayMap: { [key: string]: number } = {
+    "Domingo": 0,
+    "Segunda": 1,
+    "Terça": 2,
+    "Quarta": 3,
+    "Quinta": 4,
+    "Sexta": 5,
+    "Sábado": 6
+};
+const weekdays = Object.keys(weekdayMap);
 const hours = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00 - ${String(i).padStart(2, '0')}:59`);
 
 export default function AddCourt(): JSX.Element {
@@ -70,8 +59,35 @@ export default function AddCourt(): JSX.Element {
     };
 
     const onSubmit: SubmitHandler<ICourtForm> = async data => {
-        console.log(data);
-        // Lógica para salvar os dados da quadra
+        const courtCreate = {
+            name: data.name,
+            description: data.description,
+            schedulingFee: data.schedulingFee,
+            capacity: data.capacity,
+            imageUrl: data.imageUrl
+        };
+
+        try {
+            const { id: courtId } = await courtService.create(courtCreate);
+
+            const courtScheduling = data.weekdays.flatMap(weekdayString =>
+                data.hours.map(hourRange => { 
+                    const [startTime, endTime] = hourRange.split(' - '); 
+
+                    return {
+                        startTime: startTime + ':00',
+                        endTime: endTime + ':59', 
+                        dayOfWeek: weekdayMap[weekdayString],
+                        courtId
+                    };
+                })
+            );
+            courtScheduleService.create(courtScheduling)
+
+            console.log("Quadra e horários salvos com sucesso!");
+        } catch (error) {
+            console.error("Erro ao salvar quadra e horários:", error);
+        }
     };
 
     return (
@@ -85,6 +101,7 @@ export default function AddCourt(): JSX.Element {
                             render={({ field }) => (
                                 <TextField
                                     {...field}
+                                    autoComplete="off"
                                     label="Nome da Quadra"
                                     variant="outlined"
                                     fullWidth
@@ -104,10 +121,20 @@ export default function AddCourt(): JSX.Element {
                                     label="Preço do Agendamento"
                                     variant="outlined"
                                     type="number"
-                                    fullWidth
-                                    InputProps={{
-                                        startAdornment: <InputAdornment position="start">R$</InputAdornment>,
+                                    slotProps={{
+                                        input: {
+                                            startAdornment: <InputAdornment position="start">R$</InputAdornment>,
+                                        },
+                                        htmlInput: {
+                                            min: 0
+                                        }
                                     }}
+                                    onKeyDown={e => {
+                                        if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                    fullWidth
                                     error={!!errors.schedulingFee}
                                     helperText={errors.schedulingFee?.message}
                                 />
@@ -124,6 +151,16 @@ export default function AddCourt(): JSX.Element {
                                     label="Capacidade"
                                     variant="outlined"
                                     type="number"
+                                    slotProps={{
+                                        htmlInput: {
+                                            min: 1
+                                        }
+                                    }}
+                                    onKeyDown={e => {
+                                        if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                                            e.preventDefault();
+                                        }
+                                    }}
                                     fullWidth
                                     error={!!errors.capacity}
                                     helperText={errors.capacity?.message}
@@ -135,7 +172,7 @@ export default function AddCourt(): JSX.Element {
                         <Typography variant="subtitle1" gutterBottom>Imagem da Quadra</Typography>
                         <Box
                             onClick={() => {
-                                setModalImageUrl(imageUrlValue || ''); // Abre a modal com a URL atual
+                                setModalImageUrl(imageUrlValue || '');
                                 setIsModalOpen(true);
                             }}
                             sx={{
@@ -220,7 +257,7 @@ export default function AddCourt(): JSX.Element {
                                 render={({ field }) => (
                                     <Grid container spacing={1}>
                                         {hours.map(hour => (
-                                            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={hour}>
+                                            <Grid size={{ xs: 12, sm: 8, md: 3 }} key={hour}>
                                                 <FormControlLabel
                                                     control={<Checkbox
                                                         checked={field.value.includes(hour)}

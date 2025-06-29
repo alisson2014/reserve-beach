@@ -219,7 +219,7 @@ export default function ManageCourts(): JSX.Element {
                             {courts.map(row => {
                                 const isItemSelected = isSelected(row.id);
                                 return (
-                                    <TableRow key={row.id} hover onDoubleClick={handleEdit} selected={isItemSelected}>
+                                    <TableRow key={row.id} hover selected={isItemSelected}>
                                         <TableCell padding="checkbox">
                                             <Checkbox
                                                 color="primary"

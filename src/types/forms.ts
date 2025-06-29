@@ -4,5 +4,4 @@ export interface ILoginForm {
     confirmPassword: string;
     name: string;
     lastName: string;
-    rememberMe: boolean;
 };
