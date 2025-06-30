@@ -1,6 +1,7 @@
 import BasePaper from "./BasePaper";
 import ConfirmDialog from "./ConfirmDialog";
 import { EmailInput, PasswordInput } from "./CustomInputs";
+import Header from "./Header";
 import HomeTitle from "./HomeTitle";
 import LoadingButton from "./LoadingButton";
 import LoginCard from "./LoginCard";
@@ -16,5 +17,6 @@ export {
     SwitchThemeButton, 
     BasePaper, 
     SearchField,
-    ConfirmDialog
+    ConfirmDialog,
+    Header
 };

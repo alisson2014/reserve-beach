@@ -12,7 +12,8 @@ import {
     AppBar,
     IconButton,
     Typography,
-    Divider
+    Divider,
+    useColorScheme
 } from '@mui/material';
 import SportsTennisIcon from '@mui/icons-material/SportsTennis';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -22,10 +23,13 @@ import MenuIcon from '@mui/icons-material/Menu';
 import GroupIcon from '@mui/icons-material/Group';
 import { useAuth } from '../../../contexts';
 import { HandleTitle } from './types';
+import { SwitchThemeButton } from '../../../components';
 
 const drawerWidth = 256;
 
 export default function Layout(): JSX.Element {
+    const { mode, setMode } = useColorScheme();
+
     const { logout } = useAuth();
     const matches = useMatches();
     const navigate = useNavigate();
@@ -136,6 +140,8 @@ export default function Layout(): JSX.Element {
                     <Typography variant="h6" noWrap component="div">
                         {currentTitle}
                     </Typography>
+                    <Box sx={{ flexGrow: 1 }} />
+                    <SwitchThemeButton value={mode === 'light' ? 'dark' : 'light'} onClick={() => setMode(mode === 'light' ? 'dark' : 'light')} />
                 </Toolbar>
             </AppBar>
 

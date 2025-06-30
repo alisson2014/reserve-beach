@@ -1,15 +1,22 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { Home, Login, NotFound, PrivateRoute, Register, Unauthorized } from './pages';
-import { Dashboard, Layout, ManageCourts, AddCourt } from './pages/Admin';
+import { Dashboard, Layout as AdminLayout, ManageCourts, AddCourt } from './pages/Admin';
+import Layout from './pages/Layout';
 
 const router = createBrowserRouter([
     { 
         path: "/", 
-        element: <Home />
-    },
-    {
-        path: "/home",
-        element: <Home />
+        element: <Layout />,
+        children: [
+            {
+                index: true,
+                element: <Home />
+            },
+            {
+                path: "home",
+                element: <Home />
+            }
+        ]
     },
     { 
         path: "/login", 
@@ -27,7 +34,7 @@ const router = createBrowserRouter([
         path: "/admin",
         element: (
             <PrivateRoute roles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN']}>
-                <Layout />
+                <AdminLayout />
             </PrivateRoute>
         ),
         handle: { title: "Painel Admin" },
