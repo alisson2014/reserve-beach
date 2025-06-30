@@ -1,0 +1,1 @@
+export type HandleTitle = { handle?: { title?: string } };

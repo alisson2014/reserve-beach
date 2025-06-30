@@ -5,8 +5,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import router from "./routes";
 import theme from "./theme";
 import "./theme/reset.css";
-import { ToastProvider } from "./contexts";
-import AuthProvider from "./contexts/AuthContext";
+import { AuthProvider, ToastProvider } from "./contexts";
 
 export default function App(): JSX.Element {
   return (

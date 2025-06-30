@@ -104,13 +104,19 @@ export class CourtService {
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 if (error.response) {
-                    throw new Error(error.response.data.message || 'Erro ao criar a quadra.');
+                    if(error.response.data.errors && typeof error.response.data.errors === 'object') {
+                        throw new Error(Object.values(error.response.data.errors).join(', '));
+                    }
+
+                    throw new Error(error.response.data.message || 'Erro ao realizar cadastro.');
                 } else if (error.request) {
                     throw new Error('Nenhuma resposta recebida do servidor.');
-                }
-                throw new Error('Erro ao configurar a requisição de criação da quadra.');
-            }
-            throw new Error('Ocorreu um erro desconhecido ao criar a quadra.');
+                } 
+
+                throw new Error('Erro ao configurar a requisição de cadastro.');
+            } 
+            
+            throw new Error('Ocorreu um erro desconhecido durante o cadastro.');
         }
     }
 
@@ -124,13 +130,19 @@ export class CourtService {
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 if (error.response) {
-                    throw new Error(error.response.data.message || 'Erro ao atualizar a quadra.');
+                    if(error.response.data.errors && typeof error.response.data.errors === 'object') {
+                        throw new Error(Object.values(error.response.data.errors).join(', '));
+                    }
+
+                    throw new Error(error.response.data.message || 'Erro ao realizar cadastro.');
                 } else if (error.request) {
                     throw new Error('Nenhuma resposta recebida do servidor.');
-                }
-                throw new Error('Erro ao configurar a requisição de atualização da quadra.');
-            }
-            throw new Error('Ocorreu um erro desconhecido ao atualizar a quadra.');
+                } 
+
+                throw new Error('Erro ao configurar a requisição de cadastro.');
+            } 
+            
+            throw new Error('Ocorreu um erro desconhecido durante o cadastro.');
         }
     }
 }

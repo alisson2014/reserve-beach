@@ -30,30 +30,35 @@ const router = createBrowserRouter([
                 <Layout />
             </PrivateRoute>
         ),
+        handle: { title: "Painel Admin" },
         children: [
             {
                 index: true,
-                element: <Dashboard />
+                element: <Dashboard />,
+                handle: { title: "Dashboard" }
             },
             {
                 path: "courts",
                 children: [
                     {
                         index: true,
-                        element: <ManageCourts />
+                        element: <ManageCourts />,
+                        handle: { title: "Gerenciamento de Quadra" }
                     },
                     {
                         path: "add",
-                        element: <AddCourt />
+                        element: <AddCourt />,
+                        handle: { title: "Adicionar Nova Quadra" }
                     },
                     {
                         path: ":id/edit",
-                        element: <AddCourt />
+                        element: <AddCourt />,
+                        handle: { title: "Editar Quadra" }
                     }
                 ]
             },
         ]
-    },
+},
     { path: "*", element: <NotFound /> }
 ]);
 

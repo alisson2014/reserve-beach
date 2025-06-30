@@ -1,5 +1,5 @@
-import { useState, JSX, useEffect } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { useState, JSX, useCallback } from 'react';
+import { Outlet, useMatches, useNavigate } from 'react-router-dom';
 import {
     Drawer,
     Box,
@@ -21,30 +21,29 @@ import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import MenuIcon from '@mui/icons-material/Menu';
 import GroupIcon from '@mui/icons-material/Group';
 import { useAuth } from '../../../contexts';
+import { HandleTitle } from './types';
 
 const drawerWidth = 256;
-const routeTitles: { [key: string]: string } = {
-    '/admin': 'Dashboard',
-    '/admin/courts': 'Gerenciamento de Quadra',
-    '/admin/courts/add': 'Adicionar Nova Quadra',
-    '/admin/courts/:id/edit': 'Editar Quadra',
-};
 
 export default function Layout(): JSX.Element {
     const { logout } = useAuth();
+    const matches = useMatches();
+    const navigate = useNavigate();
+    
+    const matchWithTitle = matches
+        .slice()
+        .reverse()
+        .find(m => (m as HandleTitle).handle?.title) as HandleTitle | undefined;
+    const currentTitle = matchWithTitle?.handle?.title || 'Painel Admin';
 
     const [mobileOpen, setMobileOpen] = useState<boolean>(false);
-    const [currentTitle, setCurrentTitle] = useState<string>('Painel Admin');
 
-    const location = useLocation();
+    const handleDrawerToggle = useCallback(() => setMobileOpen(prev => !prev), []);
 
-    const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
-
-    useEffect(() => {
-        const path = location.pathname;
-        const title = routeTitles[path] || 'Painel Admin';
-        setCurrentTitle(title);
-    }, [location]);
+    const redirectTo = useCallback((path: string): void => {
+        navigate(path);
+        setMobileOpen(false);
+    }, [navigate]);
 
     const drawerContent = (
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -65,7 +64,7 @@ export default function Layout(): JSX.Element {
             <Box sx={{ flexGrow: 1 }}>
                 <List>
                     <ListItem disablePadding>
-                        <ListItemButton component={Link} to="/admin" title="Ir para dashboard geral">
+                        <ListItemButton title="Ir para dashboard geral" onClick={() => redirectTo('/admin')}>
                             <ListItemIcon>
                                 <DashboardIcon />
                             </ListItemIcon>
@@ -74,7 +73,7 @@ export default function Layout(): JSX.Element {
                     </ListItem>
 
                     <ListItem disablePadding>
-                        <ListItemButton component={Link} to="/admin/courts" title="Ir para o gerenciamento de quadras">
+                        <ListItemButton title="Ir para o gerenciamento de quadras" onClick={() => redirectTo('/admin/courts')}>
                             <ListItemIcon>
                                 <SportsTennisIcon />
                             </ListItemIcon>
@@ -83,7 +82,7 @@ export default function Layout(): JSX.Element {
                     </ListItem>
 
                     <ListItem disablePadding>
-                        <ListItemButton component={Link} to="/admin/profile" title="Ir para o gerenciamento de pagamentos">
+                        <ListItemButton title="Ir para o gerenciamento de pagamentos" onClick={() => redirectTo('/admin/payments')}>
                             <ListItemIcon>
                                 <PaymentsIcon />
                             </ListItemIcon>
@@ -92,7 +91,7 @@ export default function Layout(): JSX.Element {
                     </ListItem>
 
                     <ListItem disablePadding>
-                        <ListItemButton component={Link} to="/admin/profile" title="Visualizar usuários cadastrados">
+                        <ListItemButton title="Visualizar usuários cadastrados" onClick={() => redirectTo('/admin/profile')}>
                             <ListItemIcon>
                                 <GroupIcon />
                             </ListItemIcon>

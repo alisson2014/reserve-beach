@@ -122,6 +122,7 @@ export default function AddCourt(): JSX.Element {
                 }, 1000);
             } catch (error) {
                 console.error("Erro ao salvar quadra e horários:", error);
+                showToast(error instanceof Error ? error.message : "Erro ao realizar cadastro", "error");
             }
         }
     };
@@ -146,6 +147,7 @@ export default function AddCourt(): JSX.Element {
                 hours: [...new Set(schedules.map(s => `${s.startTime.substring(0, 5)} - ${s.endTime.substring(0, 5)}`))]
             };
 
+            console.log("Dados da quadra formatados:", formattedData);
             reset(formattedData);
             setModalImageUrl(formattedData.imageUrl || '');
 
@@ -224,7 +226,7 @@ export default function AddCourt(): JSX.Element {
                                     type="number"
                                     slotProps={{
                                         htmlInput: {
-                                            min: 1
+                                            min: 0
                                         }
                                     }}
                                     onKeyDown={e => {

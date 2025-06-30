@@ -1,13 +1,14 @@
-import { useState, useEffect, useMemo, JSX, ReactNode, useCallback } from 'react';
+import { useState, useEffect, useMemo, JSX, useCallback } from 'react';
 import { ILoginResponse } from '../../service/AuthService/types';
 import { AuthService } from '../../service';
 import { AuthContext } from './useAuth';
 import { useToast } from '../ToastContext/useToast';
 import { User } from '../../types/user';
+import { IAuthProviderProps } from './types';
 
 const authService = AuthService.getInstance();
 
-export default function AuthProvider({ children }: { children: ReactNode }): JSX.Element {
+export default function AuthProvider({ children }: IAuthProviderProps): JSX.Element {
     const { showToast } = useToast();
 
     const [user, setUser] = useState<User | null>(null);
