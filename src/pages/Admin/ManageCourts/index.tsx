@@ -91,9 +91,9 @@ export default function ManageCourts(): JSX.Element {
 
     const handleEdit = useCallback(() => {
         if (openedMenuId === null) return;
-        console.log(`Editar quadra ${openedMenuId}`);
+        navigate(`/admin/courts/${openedMenuId}/edit`);
         // Implementar lógica de edição aqui
-    }, [openedMenuId]);
+    }, [openedMenuId, navigate]);
 
     const handleAdd = useCallback(() => {
         navigate('/admin/courts/add');

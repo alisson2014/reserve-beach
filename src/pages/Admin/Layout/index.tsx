@@ -27,6 +27,7 @@ const routeTitles: { [key: string]: string } = {
     '/admin': 'Dashboard',
     '/admin/courts': 'Gerenciamento de Quadra',
     '/admin/courts/add': 'Adicionar Nova Quadra',
+    '/admin/courts/:id/edit': 'Editar Quadra',
 };
 
 export default function Layout(): JSX.Element {

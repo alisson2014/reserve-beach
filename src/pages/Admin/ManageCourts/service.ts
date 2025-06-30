@@ -24,3 +24,25 @@ export const schema: ObjectSchema<ICourtForm> = yup.object({
         .min(1, "Selecione pelo menos um horário")
         .required("O campo de horários é obrigatório"),
 });
+
+export const defaultValues: ICourtForm = {
+    name: '',
+    description: '',
+    schedulingFee: 0,
+    capacity: 0,
+    imageUrl: '',
+    weekdays: [],
+    hours: []
+};
+
+export const weekdayMap: { [key: string]: number } = {
+    "Domingo": 0,
+    "Segunda": 1,
+    "Terça": 2,
+    "Quarta": 3,
+    "Quinta": 4,
+    "Sexta": 5,
+    "Sábado": 6
+};
+export const weekdays = Object.keys(weekdayMap);
+export const hours = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00 - ${String(i).padStart(2, '0')}:59`);

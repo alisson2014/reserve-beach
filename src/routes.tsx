@@ -45,6 +45,10 @@ const router = createBrowserRouter([
                     {
                         path: "add",
                         element: <AddCourt />
+                    },
+                    {
+                        path: ":id/edit",
+                        element: <AddCourt />
                     }
                 ]
             },

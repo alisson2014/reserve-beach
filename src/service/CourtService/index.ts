@@ -36,6 +36,26 @@ export class CourtService {
         }
     }
 
+    public async show(id: number): Promise<Court> {
+        try {
+            const response = await api.get(`/courts/${id}`);
+            if (response.status !== 200) {
+                throw new Error('Quadra não encontrada.');
+            }
+            return response.data.data;
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                if (error.response) {
+                    throw new Error(error.response.data.message || 'Quadra não encontrada.');
+                } else if (error.request) {
+                    throw new Error('Nenhuma resposta recebida do servidor.');
+                }
+                throw new Error('Erro ao configurar a requisição de busca da quadra.');
+            }
+            throw new Error('Ocorreu um erro desconhecido ao buscar a quadra.');
+        }
+    }
+
     public async setActive(ids: readonly number[], active: boolean): Promise<void> {
         try {
             const response = await api.patch("/courts/active", { ids, active });
@@ -91,6 +111,26 @@ export class CourtService {
                 throw new Error('Erro ao configurar a requisição de criação da quadra.');
             }
             throw new Error('Ocorreu um erro desconhecido ao criar a quadra.');
+        }
+    }
+
+    public async update(id: number, court: ICourtCreate): Promise<Court> {
+        try {
+            const response = await api.put(`/courts/${id}`, court);
+            if (response.status !== 200) {
+                throw new Error('Erro ao atualizar a quadra.');
+            }
+            return response.data.data;
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                if (error.response) {
+                    throw new Error(error.response.data.message || 'Erro ao atualizar a quadra.');
+                } else if (error.request) {
+                    throw new Error('Nenhuma resposta recebida do servidor.');
+                }
+                throw new Error('Erro ao configurar a requisição de atualização da quadra.');
+            }
+            throw new Error('Ocorreu um erro desconhecido ao atualizar a quadra.');
         }
     }
 }

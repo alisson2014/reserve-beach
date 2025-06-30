@@ -30,4 +30,21 @@ export class CourtScheduleService {
             throw new Error('Ocorreu um erro desconhecido ao criar a quadra.');
         }
     }
+
+    public async deleteByCourtId(id: number): Promise<{ message: string }> {
+        try {
+            const { data } = await api.delete(`/court_schedules/${id}/court`);
+            return { message: data.message };
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                if (error.response) {
+                    throw new Error(error.response.data.message || 'Erro ao excluir os agendamentos.');
+                } else if (error.request) {
+                    throw new Error('Nenhuma resposta recebida do servidor.');
+                }
+                throw new Error('Erro ao configurar a requisição de exclusão dos agendamentos.');
+            }
+            throw new Error('Ocorreu um erro desconhecido ao excluir os agendamentos.');
+        }
+    }
 }

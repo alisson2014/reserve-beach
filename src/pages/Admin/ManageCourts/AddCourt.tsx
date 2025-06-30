@@ -1,5 +1,6 @@
-import { JSX, useState } from "react";
+import { JSX, useCallback, useState, useEffect, useMemo } from "react";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
+import { useNavigate, useParams } from "react-router-dom";
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
     Box,
@@ -14,81 +15,151 @@ import {
     Modal
 } from "@mui/material";
 import { Add as AddIcon } from '@mui/icons-material';
+import SaveIcon from '@mui/icons-material/Save';
+import CancelIcon from '@mui/icons-material/Cancel';
 import { BasePaper } from "../../../components";
 import { ICourtForm } from "./types";
 import { CourtService } from "../../../service";
-import { schema } from "./service";
+import { defaultValues, hours, schema, weekdayMap, weekdays } from "./service";
 import { CourtScheduleService } from "../../../service/CourtScheduleService";
+import { useToast } from "../../../contexts";
 
 const courtService = CourtService.getInstance();
 const courtScheduleService = CourtScheduleService.getInstance();
 
-const weekdayMap: { [key: string]: number } = {
-    "Domingo": 0,
-    "Segunda": 1,
-    "Terça": 2,
-    "Quarta": 3,
-    "Quinta": 4,
-    "Sexta": 5,
-    "Sábado": 6
-};
-const weekdays = Object.keys(weekdayMap);
-const hours = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00 - ${String(i).padStart(2, '0')}:59`);
-
 export default function AddCourt(): JSX.Element {
-    const { control, handleSubmit, formState: { errors }, setValue, watch } = useForm<ICourtForm>({
+    const { id } = useParams<{ id: string }>();
+    const isEditMode = useMemo(() => !!id, [id]);
+
+    const { control, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<ICourtForm>({
         resolver: yupResolver(schema),
-        defaultValues: {
-            name: '',
-            description: '',
-            schedulingFee: 0,
-            capacity: 0,
-            imageUrl: '',
-            weekdays: [],
-            hours: []
-        }
+        defaultValues
     });
 
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [modalImageUrl, setModalImageUrl] = useState<string>('');
     const imageUrlValue = watch('imageUrl');
 
-    const handleConfirmImage = () => {
+    const navigate = useNavigate();
+    const { showToast, closeToast } = useToast();
+
+    const handleConfirmImage = useCallback((): void => {
         setValue('imageUrl', modalImageUrl, { shouldValidate: true });
         setIsModalOpen(false);
-    };
+    }, [modalImageUrl, setValue]);
 
     const onSubmit: SubmitHandler<ICourtForm> = async data => {
-        const courtCreate = {
-            name: data.name,
-            description: data.description,
-            schedulingFee: data.schedulingFee,
-            capacity: data.capacity,
-            imageUrl: data.imageUrl
-        };
+        if (isEditMode) {
+            const courtUpdate = {
+                name: data.name,
+                description: data.description,
+                schedulingFee: data.schedulingFee,
+                capacity: data.capacity,
+                imageUrl: data.imageUrl
+            };
 
-        try {
-            const { id: courtId } = await courtService.create(courtCreate);
+            try {
+                const idNumber = Number(id);
+                await courtService.update(idNumber, courtUpdate);
 
-            const courtScheduling = data.weekdays.flatMap(weekdayString =>
-                data.hours.map(hourRange => { 
-                    const [startTime, endTime] = hourRange.split(' - '); 
+                const courtScheduling = data.weekdays.flatMap(weekdayString =>
+                    data.hours.map(hourRange => {
+                        const [startTime, endTime] = hourRange.split(' - ');
+                        return {
+                            startTime: startTime + ':00',
+                            endTime: endTime + ':59',
+                            dayOfWeek: weekdayMap[weekdayString],
+                            courtId: idNumber
+                        };
+                    })
+                );
 
-                    return {
-                        startTime: startTime + ':00',
-                        endTime: endTime + ':59', 
-                        dayOfWeek: weekdayMap[weekdayString],
-                        courtId
-                    };
-                })
-            );
-            courtScheduleService.create(courtScheduling)
+                await Promise.all([
+                    courtScheduleService.deleteByCourtId(idNumber),
+                    courtScheduleService.create(courtScheduling)
+                ]);
 
-            console.log("Quadra e horários salvos com sucesso!");
-        } catch (error) {
-            console.error("Erro ao salvar quadra e horários:", error);
+                showToast("Quadra atualizada com sucesso!", "success");
+                setTimeout(() => {
+                    closeToast();
+                    navigate("/admin/courts");
+                }, 1000);
+
+            } catch (error) {
+                console.error("Erro ao atualizar a quadra:", error);
+                showToast("Erro ao atualizar a quadra.", "error");
+            }
+
+        } else {
+            const courtCreate = {
+                name: data.name,
+                description: data.description,
+                schedulingFee: data.schedulingFee,
+                capacity: data.capacity,
+                imageUrl: data.imageUrl
+            }; 
+
+            try {
+                const { id: courtId } = await courtService.create(courtCreate); 
+                const courtScheduling = data.weekdays.flatMap(weekdayString =>
+                    data.hours.map(hourRange => {
+                        const [startTime, endTime] = hourRange.split(' - ');
+                        return {
+                            startTime: startTime + ':00',
+                            endTime: endTime + ':59', 
+                            dayOfWeek: weekdayMap[weekdayString], 
+                            courtId
+                        };
+                    })
+                ); 
+
+                courtScheduleService.create(courtScheduling);
+
+                showToast("Quadra criada com sucesso!", "success");
+                setTimeout(() => {
+                    closeToast();
+                    navigate("/admin/courts");
+                }, 1000);
+            } catch (error) {
+                console.error("Erro ao salvar quadra e horários:", error);
+            }
         }
     };
+
+    const loadCourtData = useCallback(async () => {
+        try {
+            const courtData = await courtService.show(Number(id));
+            const schedules = courtData.schedules || [];
+
+            const reverseWeekdayMap: { [key: number]: string } = {};
+            Object.entries(weekdayMap).forEach(([name, num]) => {
+                reverseWeekdayMap[num] = name;
+            });
+
+            const formattedData = {
+                name: courtData.name,
+                description: courtData.description ?? undefined,
+                schedulingFee: courtData.schedulingFee,
+                capacity: courtData.capacity,
+                imageUrl: courtData.imageUrl ?? undefined,
+                weekdays: [...new Set(schedules.map(s => reverseWeekdayMap[s.dayOfWeek]))],
+                hours: [...new Set(schedules.map(s => `${s.startTime.substring(0, 5)} - ${s.endTime.substring(0, 5)}`))]
+            };
+
+            reset(formattedData);
+            setModalImageUrl(formattedData.imageUrl || '');
+
+        } catch (error) {
+            console.error("Erro ao carregar dados da quadra:", error);
+            showToast("Falha ao carregar os dados da quadra.", "error");
+            navigate('/admin/courts');
+        }
+    }, [id, reset, navigate, showToast]);
+
+    useEffect(() => {
+        if (!isEditMode) return;
+        loadCourtData();
+    }, [loadCourtData, isEditMode]); 
 
     return (
         <BasePaper>
@@ -280,11 +351,25 @@ export default function AddCourt(): JSX.Element {
                     </Grid>
                     <Grid size={{ xs: 12 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 3 }}>
-                            <Button type="submit" variant="contained" color="primary">
-                                Salvar Quadra
-                            </Button>
-                            <Button variant="outlined" color="secondary">
+                            <Button 
+                                variant="outlined" 
+                                color="error"
+                                title="Cancelar e voltar"
+                                aria-label="Cancelar e voltar"
+                                onClick={() => navigate(-1)}
+                            >
+                                <CancelIcon sx={{ mr: 1 }} />
                                 Cancelar
+                            </Button>
+                            <Button 
+                                type="submit" 
+                                variant="contained" 
+                                color="success"
+                                title="Salvar quadra e horários"
+                                aria-label="Salvar quadra e horários"
+                            >
+                                <SaveIcon sx={{ mr: 1 }} />
+                                Salvar
                             </Button>
                         </Box>
                     </Grid>
