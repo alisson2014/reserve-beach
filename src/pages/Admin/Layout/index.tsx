@@ -127,7 +127,7 @@ export default function Layout(): JSX.Element {
                     ml: { md: `${drawerWidth}px` },
                 }}
             >
-                <Toolbar>
+                <Toolbar sx={{ backgroundColor: mode === 'light' ? 'grey.300' : 'inherit' }}>
                     <IconButton
                         color="inherit"
                         aria-label="open drawer"
@@ -137,7 +137,7 @@ export default function Layout(): JSX.Element {
                     >
                         <MenuIcon />
                     </IconButton>
-                    <Typography variant="h6" noWrap component="div">
+                    <Typography variant="h6" noWrap component="div" sx={{ color: mode === 'light' ? 'text.primary' : 'inherit' }}>
                         {currentTitle}
                     </Typography>
                     <Box sx={{ flexGrow: 1 }} />

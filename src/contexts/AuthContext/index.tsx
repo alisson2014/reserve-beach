@@ -16,6 +16,7 @@ export default function AuthProvider({ children }: IAuthProviderProps): JSX.Elem
 
     const validateToken = useCallback(async (): Promise<void> => {
         const authenticatedUser = await authService.validateToken();
+
         if (authenticatedUser) {
             setUser(authenticatedUser);
         }

@@ -37,20 +37,20 @@ export class AuthService {
         this._token = value;
         if (value) {
             localStorage.setItem('token', value);
+            api.defaults.headers.common['Authorization'] = `Bearer ${value}`;
         } else {
             localStorage.removeItem('token');
+            delete api.defaults.headers.common['Authorization'];
         }
     }
 
-    private setAuthData(token: string | null, user: User | null): void {
-        this._token = token;
-        this._user = user;
+    public set user(value: User | null) {
+        this._user = value;
+    }
 
-        if (token) {
-            api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        } else {
-            delete api.defaults.headers.common['Authorization'];
-        }
+    private setAuthData(token: string | null, user: User | null): void {
+        this.token = token;
+        this.user = user;
     }
 
     public logout(): null {

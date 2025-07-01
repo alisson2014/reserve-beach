@@ -195,7 +195,7 @@ export default function ManageCourts(): JSX.Element {
                 </Box>
             ) : (
                 <TableContainer>
-                    <Table stickyHeader aria-label="Tabela de quadras">
+                    <Table aria-label="Tabela de quadras">
                         <TableHead>
                             <TableRow>
                                 <TableCell padding="checkbox">
