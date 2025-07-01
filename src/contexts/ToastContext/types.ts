@@ -1,19 +1,21 @@
-import React from "react";
+import { ReactNode } from "react";
+import { AlertProps } from "@mui/material";
 
-export type ToastSeverity = 'success' | 'error' | 'warning' | 'info';
+export type ShowToastFunction = (message: string, severity?: AlertProps["severity"]) => void;
+export type CloseToastFunction = () => void;    
 
 export interface IToast {
     open: boolean;
     message: string;
-    severity: ToastSeverity;
+    severity: AlertProps["severity"];
 };
 
 export interface ToastProviderProps {
-    children: React.ReactNode;
+    children: ReactNode;
 };
 
 export interface ToastContextType {
     toast: IToast;
-    showToast: (message: string, severity?: ToastSeverity) => void;
+    showToast: ShowToastFunction;
     closeToast: () => void;
 };

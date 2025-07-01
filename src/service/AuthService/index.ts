@@ -47,10 +47,8 @@ export class AuthService {
         this._user = user;
 
         if (token) {
-            localStorage.setItem('token', token);
             api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         } else {
-            localStorage.removeItem('token');
             delete api.defaults.headers.common['Authorization'];
         }
     }
@@ -87,7 +85,7 @@ export class AuthService {
             const { data: { data: { token, user }, message, status } } = await api.post("/user/login", { email, password });
             
             if (status) {
-                this.token = token;
+                this.setAuthData(token, user);
             } 
             
             return { message, user, status };

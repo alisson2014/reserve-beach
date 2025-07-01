@@ -1,6 +1,6 @@
-import { JSX, useState } from 'react';
+import { JSX, useCallback, useMemo, useState } from 'react';
 import { Snackbar, Alert } from "@mui/material";
-import { IToast, ToastProviderProps, ToastSeverity } from './types';
+import { CloseToastFunction, IToast, ShowToastFunction, ToastProviderProps } from './types';
 import { ToastContext } from './useToast';
 
 export default function ToastProvider({ children }: ToastProviderProps): JSX.Element {
@@ -10,12 +10,20 @@ export default function ToastProvider({ children }: ToastProviderProps): JSX.Ele
         severity: 'success'
     });
 
-    const showToast = (message: string, severity: ToastSeverity = 'success'): void => setToast({ open: true, message, severity });
+    const showToast: ShowToastFunction = useCallback((message, severity = 'success') => {
+        setToast({ open: true, message, severity });
+    }, []);
 
-    const closeToast = (): void => setToast(prev => ({ ...prev, open: false }));
+    const closeToast: CloseToastFunction = useCallback(() => setToast(prev => ({ ...prev, open: false })), []);
+    
+    const value = useMemo(() => ({ 
+        toast, 
+        showToast, 
+        closeToast 
+    }), [toast, showToast, closeToast]);
 
     return (
-        <ToastContext.Provider value={{ toast, showToast, closeToast }}>
+        <ToastContext.Provider value={value}>
             {children}
             {toast.open && (
                 <Snackbar open={toast.open} autoHideDuration={3000} onClose={closeToast}>

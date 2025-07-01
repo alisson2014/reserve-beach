@@ -1,9 +1,9 @@
-import React from "react";
+import { ReactNode } from "react";
 import { User } from "../../types/user";
 import { ILoginResponse } from "../../service/AuthService/types";
 
 export interface IAuthProviderProps {
-    children: React.ReactNode;
+    children: ReactNode;
 };
 
 export interface IAuthContext {

@@ -14,16 +14,12 @@ export default function AuthProvider({ children }: IAuthProviderProps): JSX.Elem
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true); 
 
-    useEffect(() => {
-        const initAuth = async () => {
-            const authenticatedUser = await authService.validateToken();
-            if (authenticatedUser) {
-                setUser(authenticatedUser);
-            }
-            setIsLoading(false);
-        };
-        
-        initAuth();
+    const validateToken = useCallback(async (): Promise<void> => {
+        const authenticatedUser = await authService.validateToken();
+        if (authenticatedUser) {
+            setUser(authenticatedUser);
+        }
+        setIsLoading(false);
     }, []);
 
     const login = useCallback(async (email: string, password: string): Promise<ILoginResponse> => {
@@ -34,8 +30,9 @@ export default function AuthProvider({ children }: IAuthProviderProps): JSX.Elem
             }
 
             return response;
-        } catch (error) {
-            showToast(error instanceof Error ? error.message : "Erro ao realizar login", "error");
+        } catch (error: Error | unknown) {
+            const errorMessage = error instanceof Error ? error.message : "Erro ao realizar login";
+            showToast(errorMessage, "error");
             console.error("Login failed", error);
             return {} as ILoginResponse;
         }
@@ -53,6 +50,10 @@ export default function AuthProvider({ children }: IAuthProviderProps): JSX.Elem
         login,
         logout
     }), [user, isLoading, login, logout]);
+
+    useEffect(() => {
+        validateToken();
+    }, [validateToken]);
 
     return (
         <AuthContext.Provider value={value}>
