@@ -185,7 +185,7 @@ export default function Layout(): JSX.Element {
                 sx={{
                     flexGrow: 1,
                     p: 3,
-                    width: { md: `calc(100% - ${drawerWidth}px)` }
+                    width: { md: `calc(100% - ${drawerWidth}px)` },
                 }}
             >
                 <Toolbar />

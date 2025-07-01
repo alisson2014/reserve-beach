@@ -12,7 +12,7 @@ export default function Home(): JSX.Element {
     const [visibleCount, setVisibleCount] = useState<number>(CARDS_PER_PAGE);
 
     const fetchCourts = useCallback(async (): Promise<void> => {
-        const courts = await courtService.findAll();
+        const courts = await courtService.all();
         setCourtsData(courts);
     }, []);
 

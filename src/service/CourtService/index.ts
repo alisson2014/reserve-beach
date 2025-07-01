@@ -15,7 +15,7 @@ export class CourtService {
         return CourtService.instance;
     }
 
-    public async findAll(name: string | null = null): Promise<Court[]> {
+    public async all(name: string | null = null): Promise<Court[]> {
         try {
             const params = new URLSearchParams();
             if(name) {

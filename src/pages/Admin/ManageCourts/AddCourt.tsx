@@ -241,16 +241,33 @@ export default function AddCourt(): JSX.Element {
                             )}
                         />
                     </Grid>
-                    <Grid size={{ xs: 12 }}>
-                        <Typography variant="subtitle1" gutterBottom>Imagem da Quadra</Typography>
+                    <Grid size={{ xs: 12, sm: 9 }}>
+                        <Controller
+                            name="description"
+                            control={control}
+                            render={({ field }) => (
+                                <TextField
+                                    {...field}
+                                    label="Descrição (opcional)"
+                                    variant="outlined"
+                                    fullWidth
+                                    multiline
+                                    rows={3}
+                                    error={!!errors.description}
+                                    helperText={errors.description?.message}
+                                />
+                            )}
+                        />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 3 }}>
                         <Box
                             onClick={() => {
                                 setModalImageUrl(imageUrlValue || '');
                                 setIsModalOpen(true);
                             }}
                             sx={{
-                                width: 150,
-                                height: 150,
+                                width: '100%',
+                                height: '100%',
                                 border: '2px dashed',
                                 borderColor: errors.imageUrl ? 'error.main' : 'grey.500',
                                 borderRadius: 2,
@@ -269,28 +286,17 @@ export default function AddCourt(): JSX.Element {
                             {imageUrlValue ? (
                                 <img src={imageUrlValue} alt="Pré-visualização da Quadra" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             ) : (
-                                <AddIcon color="action" sx={{ fontSize: 40 }} />
+                                <Box 
+                                    sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }} 
+                                    title="Clique para adicionar uma imagem"
+                                    aria-label="Adicionar imagem"
+                                >
+                                    <AddIcon color="action" sx={{ fontSize: 40 }} />
+                                    <Typography variant="body2" color="textSecondary">Adicionar imagem</Typography>
+                                </Box>
                             )}
                         </Box>
                         {errors.imageUrl && <Typography color="error.main" variant="caption">{errors.imageUrl.message}</Typography>}
-                    </Grid>
-                    <Grid size={{ xs: 12 }}>
-                        <Controller
-                            name="description"
-                            control={control}
-                            render={({ field }) => (
-                                <TextField
-                                    {...field}
-                                    label="Descrição (opcional)"
-                                    variant="outlined"
-                                    fullWidth
-                                    multiline
-                                    rows={3}
-                                    error={!!errors.description}
-                                    helperText={errors.description?.message}
-                                />
-                            )}
-                        />
                     </Grid>
                     <Grid size={{ xs: 12 }}>
                         <Typography variant="h6">Dias da Semana Disponíveis</Typography>

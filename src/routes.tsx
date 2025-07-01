@@ -50,7 +50,7 @@ const router = createBrowserRouter([
                     {
                         index: true,
                         element: <ManageCourts />,
-                        handle: { title: "Gerenciamento de Quadra" }
+                        handle: { title: "Gerenciamento de Quadras" }
                     },
                     {
                         path: "add",

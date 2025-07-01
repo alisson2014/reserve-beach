@@ -15,6 +15,7 @@ import {
     MenuItem,
     useMediaQuery,
     Fab,
+    CircularProgress,
 } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -39,6 +40,7 @@ export default function ManageCourts(): JSX.Element {
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [openedMenuId, setOpenedMenuId] = useState<number | null>(null);
     const [openDialog, setOpenDialog] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const handleCloseDialog = useCallback((): void => {
         setOpenDialog(false);
@@ -56,10 +58,16 @@ export default function ManageCourts(): JSX.Element {
 
     const fetchCourts = useCallback(async () => {
         try {
-            const courts = await courtService.findAll(searchTerm);
+            setIsLoading(true);
+            const [courts] = await Promise.all([
+                courtService.all(searchTerm),
+                new Promise(resolve => setTimeout(resolve, 1000)) 
+            ]);
             setCourts(courts);
         } catch (error) {
             console.error('Erro ao buscar quadras:', error);
+        } finally {
+            setIsLoading(false);
         }
     }, [searchTerm]);
 
@@ -131,57 +139,9 @@ export default function ManageCourts(): JSX.Element {
         setSelected(newSelected);
     }, [selected]);
 
-    useEffect(() => {
-        fetchCourts();
-    }, [fetchCourts]);
-
-    return (
-        <BasePaper>
-            <Box sx={{ 
-                display: 'flex',
-                flexDirection: { xs: 'column', sm: 'row' },
-                justifyContent: 'space-between', 
-                alignItems: { xs: 'stretch', sm: 'center' },
-                gap: 2,
-                mb: 3 
-            }}>
-                <SearchField 
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                />
-                <Box sx={{ display: 'flex', gap: 2, justifyContent: { xs: 'flex-end', sm: 'initial' }, flexDirection: { xs: 'column', sm: 'row' } }}> 
-                    <Button 
-                        variant="outlined" 
-                        startIcon={<CancelIcon />}
-                        color="error"
-                        title="Realizar desativação das quadras selecionadas"
-                        onClick={() => setActive(activeSelected.map(c => c.id), false)}
-                        disabled={activeSelected.length === 0}
-                    >
-                        Desativar ({activeSelected.length})
-                    </Button>
-                    <Button 
-                        variant="outlined" 
-                        startIcon={<CheckCircleOutlineIcon />}
-                        color="success"
-                        title="Realizar ativação das quadras selecionadas"
-                        onClick={() => setActive(inactiveSelected.map(c => c.id), true)}
-                        disabled={inactiveSelected.length === 0}
-                    >
-                        Ativar ({inactiveSelected.length})
-                    </Button>
-                    <Fab 
-                        variant="extended"
-                        title="Adicionar nova quadra"
-                        onClick={handleAdd}
-                    >
-                        <AddIcon sx={{ mr: 1 }} />
-                        Adicionar
-                    </Fab>
-                </Box>
-            </Box>
-
-            {isMobile ? (
+    const ListCourts = () => {
+        if(isMobile) {
+            return (
                 <Box>
                     {courts.map(row => (
                         <MobileCard 
@@ -193,7 +153,11 @@ export default function ManageCourts(): JSX.Element {
                         />
                     ))}
                 </Box>
-            ) : (
+            );
+        }
+
+        return (
+            <Box sx={{ overflow: 'auto', maxHeight: '460px' }}>
                 <TableContainer>
                     <Table aria-label="Tabela de quadras">
                         <TableHead>
@@ -246,7 +210,65 @@ export default function ManageCourts(): JSX.Element {
                         </TableBody>
                     </Table>
                 </TableContainer>
-            )}
+            </Box>
+        );
+    };
+
+    useEffect(() => {
+        fetchCourts();
+    }, [fetchCourts]);
+
+    return (
+        <BasePaper>
+            <Box sx={{ 
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                justifyContent: 'space-between', 
+                alignItems: { xs: 'stretch', sm: 'center' },
+                gap: 2,
+                mb: 3 
+            }}>
+                <SearchField 
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                />
+                <Box sx={{ display: 'flex', gap: 2, justifyContent: { xs: 'flex-end', sm: 'initial' }, flexDirection: { xs: 'column', sm: 'row' } }}> 
+                    <Button 
+                        variant="outlined" 
+                        startIcon={<CancelIcon />}
+                        color="error"
+                        title="Realizar desativação das quadras selecionadas"
+                        onClick={() => setActive(activeSelected.map(c => c.id), false)}
+                        disabled={activeSelected.length === 0}
+                    >
+                        Desativar ({activeSelected.length})
+                    </Button>
+                    <Button 
+                        variant="outlined" 
+                        startIcon={<CheckCircleOutlineIcon />}
+                        color="success"
+                        title="Realizar ativação das quadras selecionadas"
+                        onClick={() => setActive(inactiveSelected.map(c => c.id), true)}
+                        disabled={inactiveSelected.length === 0}
+                    >
+                        Ativar ({inactiveSelected.length})
+                    </Button>
+                    <Fab 
+                        variant="extended"
+                        title="Adicionar nova quadra"
+                        onClick={handleAdd}
+                    >
+                        <AddIcon sx={{ mr: 1 }} />
+                        Adicionar
+                    </Fab>
+                </Box>
+            </Box>
+
+            {isLoading ? (
+                <Box display="flex" justifyContent="center" alignItems="center" height="100%">
+                    <CircularProgress />
+                </Box>
+            ) : <ListCourts />}
 
             <Menu
                 anchorEl={anchorEl}
