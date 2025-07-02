@@ -5,7 +5,7 @@ import { Court } from '../../../types/court';
 interface CourtCardProps {
   court: Court;
   onViewSchedules: (courtId: number) => void;
-}
+};
 
 export default function CourtCard({ court, onViewSchedules }: CourtCardProps): JSX.Element {
   return (
@@ -31,14 +31,17 @@ export default function CourtCard({ court, onViewSchedules }: CourtCardProps): J
         <Typography gutterBottom variant="h5" component="div">
           {court.name}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
-          <b>Capacidade:</b> {court.capacity} pessoa{court.capacity > 1 ? 's' : ''}
-        </Typography>
         {court.description && (
             <Typography variant="body2" color="text.secondary">
             <b>Descrição:</b> {court.description}
             </Typography>
         )}
+        <Typography variant="body2" color="text.secondary">
+          <b>Capacidade:</b> {court.capacity} pessoa{court.capacity > 1 ? 's' : ''}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          <b>Taxa de agendamento:</b> {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(court.schedulingFee || 0)} por hora
+        </Typography>
       </CardContent>
       <CardActions sx={{ justifyContent: 'center' }}>
         <Button 

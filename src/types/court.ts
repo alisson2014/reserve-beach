@@ -12,5 +12,5 @@ export interface Court {
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
-    schedules: CourtSchedule[] | null;
+    schedules: CourtSchedule[];
 };

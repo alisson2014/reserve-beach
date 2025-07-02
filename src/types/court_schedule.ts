@@ -1,5 +1,5 @@
 export interface CourtSchedule {
-    id?: number;
+    id: number;
     courtId: number;
     startTime: string;
     endTime: string;

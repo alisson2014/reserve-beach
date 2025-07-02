@@ -1,56 +1,32 @@
 import { JSX, useState, useEffect, useCallback, useMemo } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import dayjs, { Dayjs } from 'dayjs';
-import { useParams } from "react-router-dom";
 import { Box, Button, Chip, Grid, Paper, Typography } from "@mui/material";
-import { Court } from "../../types/court";
-import { CourtScheduleService, CourtService } from "../../service";
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import PaymentsIcon from '@mui/icons-material/Payments';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
-dayjs.extend(customParseFormat); 
-
-function groupSlots(slots: string[]): string[] {
-    if (slots.length === 0) return [];
-
-    const timeFormat = 'HH:mm';
-
-    const sorted = [...slots].sort((a, b) => { 
-        const [aStart] = a.split(' - ');
-        const [bStart] = b.split(' - ');
-        return dayjs(aStart, timeFormat).diff(dayjs(bStart, timeFormat));
-    });
-
-    const result: { start: string; end: string }[] = [];
-    const [initialStart, initialEnd] = sorted[0].split(' - ').map(s => s.trim());
-    let currentGroup = { start: initialStart, end: initialEnd };
-
-    for (let i = 1; i < sorted.length; i++) {
-        const [start, end] = sorted[i].split(' - ');
-        const prevEnd = currentGroup.end;
-
-        const expectedStart = dayjs(prevEnd, timeFormat).add(1, 'minute');
-
-        if (dayjs(start, timeFormat).isSame(expectedStart)) {
-            currentGroup.end = end; 
-        } else {
-            result.push(currentGroup);
-            currentGroup = { start, end };
-        }
-    }
-    result.push(currentGroup);
-
-    return result.map(({ start, end }) => `${start} as ${end}`);
-}
+import { Court } from "../../types/court";
+import { CourtScheduleService, CourtService, CartService, groupSlots } from "../../service";
+import { CourtSchedule } from "../../types/court_schedule";
+import { PickerValue } from "@mui/x-date-pickers/internals";
+import { formatTime } from "./service";
+import { CartItemBody } from "../../service/CartService/types";
+import { useAuth, useToast } from "../../contexts";
 
 const courtService = CourtService.getInstance();
 const courtScheduleService = CourtScheduleService.getInstance();
+const cartService = CartService.getInstance();
 
 export default function CourtScheduling(): JSX.Element {
     const { id } = useParams<{ id: string }>();
+    const { isAuthenticated } = useAuth();
+    const { showToast } = useToast();
+    const navigate = useNavigate();
 
     const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs());
     const [courtInfo, setCourtInfo] = useState<Court>({} as Court);
-    const [availableSlots, setAvailableSlots] = useState<string[]>([]);
-    const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
+    const [availableSlots, setAvailableSlots] = useState<CourtSchedule[]>([]);
+    const [selectedSlots, setSelectedSlots] = useState<CourtSchedule[]>([]);
 
     const fetchCourtInfo = useCallback(async () => {
         if(!id) return; 
@@ -63,37 +39,69 @@ export default function CourtScheduling(): JSX.Element {
         }
     }, [id]);
 
-    const fetchSchedulesAndBookings = useCallback(async () => {
+    const fetchSchedules = useCallback(async () => {
         if (!id || !selectedDate) return;
 
         try {
             const dayOfWeek = selectedDate.day(); 
-            console.log(`Fetching schedules for court ID ${id} on day ${dayOfWeek} (${selectedDate.format('DD/MM/YYYY')})`);
 
             const schedules = await courtScheduleService.getByCourtAndDay(Number(id), dayOfWeek);
-            const allPossibleSlots = schedules.map(s => `${s.startTime.substring(0, 5)} - ${s.endTime.substring(0, 5)}`);
             
-            setAvailableSlots(allPossibleSlots);
+            setAvailableSlots(schedules);
         } catch (error) {
             console.error("Failed to fetch schedules and bookings:", error);
         }
     }, [id, selectedDate]);
 
-    const handleSlotClick = useCallback((slot: string) => {
+    const handleSlotClick = useCallback((slot: CourtSchedule) => {
         setSelectedSlots(prev =>
-            prev.includes(slot) ? prev.filter(s => s !== slot) : [...prev, slot]
+            prev.includes(slot) ? prev.filter(s => s.id !== slot.id) : [...prev, slot]
         );
     }, []);
+
+    const handleScheduledDate = useCallback((newDate: PickerValue) => {
+        setSelectedDate(newDate);
+        setSelectedSlots([]);
+    }, []);
+
+    const handleAddToCart = useCallback(async () => {
+        if (selectedSlots.length === 0 || !selectedDate) return;
+
+        if(!isAuthenticated) {
+            showToast("Você precisa estar logado para adicionar horários ao carrinho.", "warning");
+            navigate("/login");
+            return;
+        }
+
+        const body: CartItemBody = {
+            courtScheduleIds: selectedSlots.map(slot => slot.id),
+            scheduleDate: selectedDate?.format('YYYY-MM-DD')
+        };
+
+        try {
+            await cartService.addToCart(body);
+            alert("Horários adicionados ao carrinho com sucesso!");
+        } catch (error) {
+            console.error("Failed to add to cart:", error);
+            alert("Erro ao adicionar horários ao carrinho.");
+        } finally {
+            setSelectedSlots([]);
+            setSelectedDate(dayjs());
+        }
+    }, [selectedSlots, selectedDate, isAuthenticated, showToast, navigate]);
 
     useEffect(() => {
         fetchCourtInfo();
     }, [fetchCourtInfo]);
 
     useEffect(() => {
-        fetchSchedulesAndBookings();
-    }, [fetchSchedulesAndBookings]);
+        fetchSchedules();
+    }, [fetchSchedules]);
 
-    const groupedSlots = useMemo(() => groupSlots(selectedSlots), [selectedSlots]);
+    const groupedSlots = useMemo(() => {
+        const selectedSlotTimes = selectedSlots.map(slot => `${formatTime(slot.startTime)} - ${formatTime(slot.endTime)}`);
+        return groupSlots(selectedSlotTimes);
+    }, [selectedSlots]);
 
     return (
         <Paper sx={{ p: { xs: 2, md: 4 }, mt: { xs: 7, sm: 8 }, minHeight: '100vh' }}>
@@ -128,7 +136,7 @@ export default function CourtScheduling(): JSX.Element {
                         <DatePicker
                             label="Data do agendamento"
                             value={selectedDate}
-                            onChange={newDate => setSelectedDate(newDate)}
+                            onChange={handleScheduledDate}
                             format="DD/MM/YYYY" 
                         />
                     </Box>
@@ -138,8 +146,8 @@ export default function CourtScheduling(): JSX.Element {
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-start', gap: 2 }}>
                         {availableSlots.length > 0 ? availableSlots.map(slot => (
                             <Chip
-                                key={slot}
-                                label={slot}
+                                key={slot.id}
+                                label={`${formatTime(slot.startTime)} - ${formatTime(slot.endTime)}`}
                                 color={selectedSlots.includes(slot) ? 'success' : 'default'}
                                 onClick={() => handleSlotClick(slot)}
                                 clickable
@@ -158,14 +166,19 @@ export default function CourtScheduling(): JSX.Element {
                         variant="contained"
                         color="primary"
                         disabled={selectedSlots.length === 0}
+                        onClick={handleAddToCart}
+                        title="Adicionar horários selecionados ao carrinho"
                     >
-                        Reservar
+                        <AddShoppingCartIcon sx={{ mr: 1 }} />
+                        Adicionar
                     </Button>
                     <Button
                         variant="contained"
                         color="success"
                         disabled={selectedSlots.length === 0}
+                        title="Finalizar agendamento e pagar"
                     >
+                        <PaymentsIcon sx={{ mr: 1 }} />
                         Pagar
                     </Button>
                 </Grid>
