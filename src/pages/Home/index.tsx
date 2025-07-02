@@ -3,6 +3,7 @@ import { Grid, Box, Typography, Container, Button } from '@mui/material';
 import { Court } from "../../types/court";
 import CourtCard from "./components/CourtCard";
 import { CourtService } from "../../service";
+import { useNavigate } from "react-router-dom";
 
 const courtService = CourtService.getInstance();
 const CARDS_PER_PAGE = 6;
@@ -10,6 +11,8 @@ const CARDS_PER_PAGE = 6;
 export default function Home(): JSX.Element {
     const [courtsData, setCourtsData] = useState<Court[]>([]);
     const [visibleCount, setVisibleCount] = useState<number>(CARDS_PER_PAGE);
+
+    const navigate = useNavigate();
 
     const fetchCourts = useCallback(async (): Promise<void> => {
         const courts = await courtService.all();
@@ -20,19 +23,16 @@ export default function Home(): JSX.Element {
         setVisibleCount(prevCount => prevCount + CARDS_PER_PAGE);
     }, []);
 
-      const handleViewSchedules = (courtId: number) => {
-        const selectedCourt = courtsData.find(c => c.id === courtId);
-        // Aqui você implementaria a lógica de navegação ou de abrir um modal
-        console.log(`Ver horários da quadra: ${selectedCourt?.name} (ID: ${courtId})`);
-        alert(`Abrindo horários para a quadra: ${selectedCourt?.name}`);
-    };
+    const handleViewSchedules = useCallback((courtId: number) => {
+        navigate("/courts/" + courtId);
+    }, [navigate]);
 
     useEffect(() => {
         fetchCourts();
     }, [fetchCourts]);
 
     return (
-        <Container sx={{ py: 4 }}>
+        <Container sx={{ py: 4, mt: { xs: 7, sm: 8 } }}>
             <Typography variant="h4" component="h1" gutterBottom>
                 Quadras Disponíveis
             </Typography>

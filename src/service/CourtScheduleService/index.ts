@@ -14,6 +14,23 @@ export class CourtScheduleService {
         return CourtScheduleService.instance;
     }
 
+    public async getByCourtAndDay(courtId: number, dayOfWeek: number): Promise<CourtSchedule[]> {
+        try {
+            const { data } = await api.get(`/court_schedules/${courtId}/dayOfWeek/${dayOfWeek}`);
+            return data.data;
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                if (error.response) {
+                    throw new Error(error.response.data.message || 'Erro ao buscar os agendamentos da quadra.');
+                } else if (error.request) {
+                    throw new Error('Nenhuma resposta recebida do servidor.');
+                }
+                throw new Error('Erro ao configurar a requisição de busca dos agendamentos da quadra.');
+            }
+            throw new Error('Ocorreu um erro desconhecido ao buscar os agendamentos da quadra.');
+        }
+    }
+
     public async create(courtSchedule: CourtSchedule[]): Promise<{ message: string }> {
         try {
             const { data } = await api.post("/court_schedules", courtSchedule);

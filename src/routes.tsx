@@ -1,5 +1,5 @@
 import { createBrowserRouter } from 'react-router-dom';
-import { Home, Login, NotFound, PrivateRoute, Register, Unauthorized } from './pages';
+import { CourtScheduling, Home, Login, NotFound, PrivateRoute, Register, Unauthorized } from './pages';
 import { Dashboard, Layout as AdminLayout, ManageCourts, AddCourt } from './pages/Admin';
 import Layout from './pages/Layout';
 
@@ -15,6 +15,10 @@ const router = createBrowserRouter([
             {
                 path: "home",
                 element: <Home />
+            },
+            {
+                path: "courts/:id",
+                element: <CourtScheduling />
             }
         ]
     },

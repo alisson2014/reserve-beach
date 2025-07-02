@@ -15,6 +15,7 @@ import {
     Menu,
     MenuItem,
     Divider,
+    useColorScheme,
 } from "@mui/material";
 import { Link } from 'react-router-dom';
 import {
@@ -36,6 +37,8 @@ const navLinks = [
 export default function Header(): JSX.Element {
     const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
     const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
+
+    const { mode } = useColorScheme();
 
     const { logout, isAuthenticated } = useAuth();
 
@@ -68,8 +71,8 @@ export default function Header(): JSX.Element {
 
     return (
         <>
-            <AppBar position="static">
-                <Toolbar>
+            <AppBar position="fixed">
+                <Toolbar sx={{ backgroundColor: mode === 'light' ? 'grey.500' : 'inherit' }}> 
                     <IconButton
                         color="inherit"
                         aria-label="Abrir menu"
@@ -120,7 +123,7 @@ export default function Header(): JSX.Element {
                                     open={Boolean(anchorElUser)}
                                     onClose={handleCloseUserMenu}
                                 >
-                                    <MenuItem onClick={handleCloseUserMenu}>
+                                    <MenuItem onClick={handleCloseUserMenu} title="Ir para meu perfil" aria-label="Ir para meu perfil">
                                         <Typography textAlign="center">Meu Perfil</Typography>
                                     </MenuItem>
                                     <Divider />
@@ -129,6 +132,8 @@ export default function Header(): JSX.Element {
                                             logout();
                                             handleCloseUserMenu();
                                         }}
+                                        title="Sair do sistema"
+                                        aria-label="Sair do sistema"
                                     >
                                         <ListItemIcon>
                                             <LogoutIcon fontSize="small" />
