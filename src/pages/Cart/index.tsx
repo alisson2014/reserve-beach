@@ -64,6 +64,21 @@ export default function Cart(): JSX.Element {
         setSelected(newSelected);
     }, [selected]);
 
+    const handleDeleteItem = useCallback(async () => {
+        // Implementar a lógica para remover itens do carrinho
+        try {
+            await cartService.deleteItens(selected);
+            setSelected([]);
+            fetchCartInfo();
+        } catch (error) {
+            console.error("Erro ao remover itens do carrinho:", error);
+        }
+    }, [selected, fetchCartInfo]);
+
+    const handleProcessPayment = useCallback(() => {
+
+    }, []);
+
     const isSelected = useCallback((id: number): boolean => selected.indexOf(id) !== -1, [selected]);
 
     useEffect(() => {
@@ -74,19 +89,19 @@ export default function Cart(): JSX.Element {
         const isMobile = useMediaQuery(theme => theme.breakpoints.down('sm'));
 
         if(isMobile) {
-            return (
-                <Box>
-                    {/* {items.map(row => (
-                        <MobileCard 
-                            isSelected={isSelected}
-                            handleCheckboxClick={handleCheckboxClick}
-                            row={row}
-                            handleMoreOptions={handleMoreOptions}
-                            getStatusChipColor={getStatusChipColor}
-                        />
-                    ))} */}
-                </Box>
-            );
+            // return (
+            //     <Box>
+            //         {/* {items.map(row => (
+            //             <MobileCard 
+            //                 isSelected={isSelected}
+            //                 handleCheckboxClick={handleCheckboxClick}
+            //                 row={row}
+            //                 handleMoreOptions={handleMoreOptions}
+            //                 getStatusChipColor={getStatusChipColor}
+            //             />
+            //         ))} */}
+            //     </Box>
+            // );
         }
 
         return (
@@ -151,6 +166,7 @@ export default function Cart(): JSX.Element {
                             color="error"
                             title="Remover quadras selecionadas do carrinho"
                             disabled={selected.length === 0}
+                            onClick={handleDeleteItem}
                         >
                             Remover
                         </Button>
@@ -160,6 +176,7 @@ export default function Cart(): JSX.Element {
                             color="success"
                             title="Pagar quadras selecionadas"
                             disabled={selected.length === 0}
+                            onClick={handleProcessPayment}
                         >
                             Pagar
                         </Button>
