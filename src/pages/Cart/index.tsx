@@ -1,6 +1,6 @@
 import React, { JSX, useCallback, useEffect, useState } from "react";
 import {
-    Box,
+  Box,
   Button,
   Checkbox,
   Container,
@@ -13,7 +13,7 @@ import {
   Typography,
   useMediaQuery,
 } from '@mui/material';
-import { BasePaper } from "../../components";
+import { BasePaper, PaymentDialog } from "../../components";
 import { formatTime } from "../CourtScheduling/service";
 import dayjs from "dayjs";
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -26,6 +26,10 @@ const cartService = CartService.getInstance();
 export default function Cart(): JSX.Element {
     const [cartInfo, setCartInfo] = useState<readonly CartInformation[]>([]);
     const [selected, setSelected] = useState<readonly number[]>([]);
+
+    const [isPaymentDialogOpen, setPaymentDialogOpen] = useState<boolean>(false);
+    const [paymentMethod, setPaymentMethod] = useState<string>('');
+    const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
     const fetchCartInfo = useCallback(async (): Promise<void> => {
         try {
@@ -76,8 +80,33 @@ export default function Cart(): JSX.Element {
     }, [selected, fetchCartInfo]);
 
     const handleProcessPayment = useCallback(() => {
-
+        setPaymentDialogOpen(true);
     }, []);
+
+    const handleConfirmPayment = useCallback(async () => {
+        if (!paymentMethod) {
+            alert("Por favor, selecione uma forma de pagamento."); // Ou usar um componente de Snackbar/Toast
+            return;
+        }
+        setIsProcessing(true);
+        try {
+            // Você precisará criar este método no seu serviço
+            // await cartService.processPayment(selected, paymentMethod);
+            
+            // Sucesso
+            setPaymentDialogOpen(false);
+            setSelected([]);
+            setPaymentMethod('');
+            fetchCartInfo(); // Atualiza a lista do carrinho
+            // Opcional: Mostrar uma mensagem de sucesso para o usuário
+            
+        } catch (error) {
+            console.error("Erro ao processar pagamento:", error);
+            // Opcional: Mostrar uma mensagem de erro para o usuário
+        } finally {
+            setIsProcessing(false);
+        }
+    }, [paymentMethod, fetchCartInfo]);
 
     const isSelected = useCallback((id: number): boolean => selected.indexOf(id) !== -1, [selected]);
 
@@ -184,6 +213,17 @@ export default function Cart(): JSX.Element {
                 </Box>
                 <ListItems />
             </BasePaper>
+
+            <PaymentDialog 
+                open={isPaymentDialogOpen}
+                isProcessing={isProcessing}
+                paymentMethod={paymentMethod}
+                onClose={() => setPaymentDialogOpen(false)}
+                onConfirm={handleConfirmPayment}
+                onPaymentMethodChange={(event) => setPaymentMethod(event.target.value as string)}
+                //O totalAmount precisa ser calculado com base nos itens selecionados
+                totalAmount={cartInfo.reduce((total, item) => selected.includes(item.cartItemId) ? total + item.schedulingFee : total, 0)}
+            />
         </Container>
     );
 };

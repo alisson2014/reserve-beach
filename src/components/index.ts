@@ -5,6 +5,7 @@ import Header from "./Header";
 import HomeTitle from "./HomeTitle";
 import LoadingButton from "./LoadingButton";
 import LoginCard from "./LoginCard";
+import PaymentDialog from "./PaymentDialog";
 import SearchField from "./SearchField";
 import SwitchThemeButton from "./SwitchThemeButton";
 
@@ -18,5 +19,6 @@ export {
     BasePaper, 
     SearchField,
     ConfirmDialog,
-    Header
+    Header,
+    PaymentDialog
 };
