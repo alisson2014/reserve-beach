@@ -1,6 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
-import { Cart, CourtScheduling, Home, Login, NotFound, PrivateRoute, Register, Unauthorized } from './pages';
-import { Dashboard, Layout as AdminLayout, ManageCourts, AddCourt } from './pages/Admin';
+import { Cart, CourtScheduling, Home, Login, NotFound, PrivateRoute, Register, Schedules, Unauthorized } from './pages';
+import { Schedules as Dashboard, Layout as AdminLayout, ManageCourts, AddCourt } from './pages/Admin';
 import Layout from './pages/Layout';
 
 const router = createBrowserRouter([
@@ -22,7 +22,11 @@ const router = createBrowserRouter([
             },
             {
                 path: "cart",
-                element: <Cart />
+                element: <Cart />,
+            },
+            {
+                path: "schedules",
+                element: <Schedules />,
             }
         ]
     },
@@ -50,7 +54,7 @@ const router = createBrowserRouter([
             {
                 index: true,
                 element: <Dashboard />,
-                handle: { title: "Dashboard" }
+                handle: { title: "Agendamentos" }
             },
             {
                 path: "courts",

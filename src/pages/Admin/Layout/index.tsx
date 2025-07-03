@@ -85,7 +85,7 @@ export default function Layout(): JSX.Element {
                         </ListItemButton>
                     </ListItem>
 
-                    <ListItem disablePadding>
+                    {/* <ListItem disablePadding>
                         <ListItemButton title="Ir para o gerenciamento de pagamentos" onClick={() => redirectTo('/admin/payments')}>
                             <ListItemIcon>
                                 <PaymentsIcon />
@@ -101,7 +101,7 @@ export default function Layout(): JSX.Element {
                             </ListItemIcon>
                             <ListItemText primary="Usuários" />
                         </ListItemButton>
-                    </ListItem>
+                    </ListItem> */}
                 </List>
             </Box>
             <Divider />

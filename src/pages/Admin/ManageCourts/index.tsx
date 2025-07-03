@@ -2,34 +2,23 @@ import { JSX, useState, useEffect, useCallback, useMemo } from "react";
 import { 
     Box, 
     Button, 
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Chip,
-    Checkbox,
-    IconButton,
     Menu,
     MenuItem,
-    useMediaQuery,
     Fab,
     CircularProgress,
 } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import CancelIcon from '@mui/icons-material/Cancel';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ModeEditOutlineIcon from '@mui/icons-material/ModeEditOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { BasePaper, ConfirmDialog, SearchField } from "../../../components";
 import { Court } from "../../../types/court";
 import { handleCheckboxClickFunction, handleMoreOptionsFunction, isSelectedFunction } from "./types";
-import { MobileCard } from "./components";
 import { CourtService } from "../../../service";
 import { getStatusChipColor } from "./service";
 import { useNavigate } from "react-router-dom";
+import ListCourts from "./components/List";
 
 const courtService = CourtService.getInstance();
 
@@ -46,7 +35,6 @@ export default function ManageCourts(): JSX.Element {
         setOpenDialog(false);
     }, []);
 
-    const isMobile = useMediaQuery(theme => theme.breakpoints.down('sm'));
     const navigate = useNavigate();
 
     const isSelected: isSelectedFunction = useCallback(id => selected.indexOf(id) !== -1, [selected]);
@@ -54,7 +42,10 @@ export default function ManageCourts(): JSX.Element {
     const activeSelected = useMemo(() => selectedCourts.filter(court => court.active), [selectedCourts]);
     const inactiveSelected = useMemo(() => selectedCourts.filter(court => !court.active), [selectedCourts]);
 
-    const handleClose = useCallback((): void => setAnchorEl(null), []);
+    const handleClose = useCallback((): void => {
+        console.log('Menu closed');
+        setAnchorEl(null)
+    }, []);
 
     const fetchCourts = useCallback(async () => {
         try {
@@ -115,7 +106,8 @@ export default function ManageCourts(): JSX.Element {
         setSelected([]);
     }, [courts]);
 
-    const handleMoreOptions: handleMoreOptionsFunction = useCallback(async (event, id) => {
+    const handleMoreOptions: handleMoreOptionsFunction = useCallback((event, id) => {
+        console.log('Menu opened for court ID:', event.currentTarget);
         setAnchorEl(event.currentTarget);
         setOpenedMenuId(id);
     }, []);
@@ -138,81 +130,6 @@ export default function ManageCourts(): JSX.Element {
         }
         setSelected(newSelected);
     }, [selected]);
-
-    const ListCourts = () => {
-        if(isMobile) {
-            return (
-                <Box>
-                    {courts.map(row => (
-                        <MobileCard 
-                            isSelected={isSelected}
-                            handleCheckboxClick={handleCheckboxClick}
-                            row={row}
-                            handleMoreOptions={handleMoreOptions}
-                            getStatusChipColor={getStatusChipColor}
-                        />
-                    ))}
-                </Box>
-            );
-        }
-
-        return (
-            <Box sx={{ overflow: 'auto', maxHeight: '460px' }}>
-                <TableContainer>
-                    <Table aria-label="Tabela de quadras">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell padding="checkbox">
-                                    <Checkbox
-                                        color="primary"
-                                        indeterminate={selected.length > 0 && selected.length < courts.length}
-                                        checked={courts.length > 0 && selected.length === courts.length}
-                                        onChange={handleSelectAllClick}
-                                    />
-                                </TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }}>Nome</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }}>Capacidade</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }}>Descrição</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }}>Preço</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>Status</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>Ações</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {courts.map(row => {
-                                const isItemSelected = isSelected(row.id);
-                                return (
-                                    <TableRow key={row.id} hover selected={isItemSelected}>
-                                        <TableCell padding="checkbox">
-                                            <Checkbox
-                                                color="primary"
-                                                checked={isItemSelected}
-                                                onClick={(event) => handleCheckboxClick(event, row.id)}
-                                            />
-                                        </TableCell>
-                                        <TableCell>{row.name}</TableCell>
-                                        <TableCell>{row.capacity}</TableCell>
-                                        <TableCell>{row.description ?? "Sem descrição"}</TableCell>
-                                        <TableCell>
-                                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(row.schedulingFee)}
-                                        </TableCell>
-                                        <TableCell align="center">
-                                            <Chip label={row.active ? 'Ativo' : 'Inativo'} color={getStatusChipColor(row.active)} size="small"/>
-                                        </TableCell>
-                                        <TableCell align="center">
-                                            <IconButton onClick={e => handleMoreOptions(e, row.id)} title="Mais ações">
-                                                <MoreVertIcon />
-                                            </IconButton>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </Box>
-        );
-    };
 
     useEffect(() => {
         fetchCourts();
@@ -268,28 +185,40 @@ export default function ManageCourts(): JSX.Element {
                 <Box display="flex" justifyContent="center" alignItems="center" height="100%">
                     <CircularProgress />
                 </Box>
-            ) : <ListCourts />}
-
-            <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleClose}
-            >
-                <MenuItem onClick={handleEdit} title="Ir para edição da quadra">
-                    <ModeEditOutlineIcon fontSize="small" />
-                    &ensp;Editar
-                </MenuItem>
-                <MenuItem 
-                    onClick={() => {
-                        handleClose();
-                        setOpenDialog(true);
-                    }} 
-                    title="Excluir a quadra selecionada"
-                >
-                    <DeleteIcon fontSize="small" />
-                    &ensp;Apagar
-                </MenuItem>
-            </Menu>
+            ) : (
+                <>
+                    <ListCourts 
+                        courts={courts}
+                        isSelected={isSelected}
+                        handleCheckboxClick={handleCheckboxClick}
+                        handleMoreOptions={handleMoreOptions}
+                        getStatusChipColor={getStatusChipColor}
+                        handleSelectAllClick={handleSelectAllClick}
+                        selected={selected}
+                    />
+                    <Menu
+                        anchorEl={anchorEl}
+                        open={Boolean(anchorEl)}
+                        onClose={handleClose}
+                        keepMounted={false}
+                    >
+                        <MenuItem onClick={handleEdit} title="Ir para edição da quadra">
+                            <ModeEditOutlineIcon fontSize="small" />
+                            &ensp;Editar
+                        </MenuItem>
+                        <MenuItem 
+                            onClick={() => {
+                                handleClose();
+                                setOpenDialog(true);
+                            }} 
+                            title="Excluir a quadra selecionada"
+                        >
+                            <DeleteIcon fontSize="small" />
+                            &ensp;Apagar
+                        </MenuItem>
+                    </Menu>
+                </>
+            )}
 
             <ConfirmDialog 
                 open={openDialog}
