@@ -14,7 +14,6 @@ import {
     Box,
     Menu,
     MenuItem,
-    Divider,
     useColorScheme,
 } from "@mui/material";
 import { Link } from 'react-router-dom';
@@ -123,10 +122,10 @@ export default function Header(): JSX.Element {
                                     open={Boolean(anchorElUser)}
                                     onClose={handleCloseUserMenu}
                                 >
-                                    <MenuItem onClick={handleCloseUserMenu} title="Ir para meu perfil" aria-label="Ir para meu perfil">
+                                    {/* <MenuItem onClick={handleCloseUserMenu} title="Ir para meu perfil" aria-label="Ir para meu perfil">
                                         <Typography textAlign="center">Meu Perfil</Typography>
                                     </MenuItem>
-                                    <Divider />
+                                    <Divider /> */}
                                     <MenuItem 
                                         onClick={() => {
                                             logout();

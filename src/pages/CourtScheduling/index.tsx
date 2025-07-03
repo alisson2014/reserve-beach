@@ -79,7 +79,7 @@ export default function CourtScheduling(): JSX.Element {
         };
 
         try {
-            await cartService.addToCart(body);
+            await cartService.addItems(body);
             alert("Horários adicionados ao carrinho com sucesso!");
         } catch (error) {
             console.error("Failed to add to cart:", error);

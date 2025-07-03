@@ -1,6 +1,6 @@
 import axios from "axios";
 import api from "../../api";
-import { CourtSchedule } from "../../types/court_schedule";
+import { CourtSchedule, CourtScheduleCreate } from "../../types/court_schedule";
 
 export class CourtScheduleService {
     private static instance: CourtScheduleService;
@@ -31,7 +31,7 @@ export class CourtScheduleService {
         }
     }
 
-    public async create(courtSchedule:  Omit<CourtSchedule, 'id'>[]): Promise<{ message: string }> {
+    public async create(courtSchedule:  CourtScheduleCreate[]): Promise<{ message: string }> {
         try {
             const { data } = await api.post("/court_schedules", courtSchedule);
             return { message: data.message };

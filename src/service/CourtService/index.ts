@@ -1,7 +1,6 @@
 import axios from "axios";
 import api from "../../api";
-import { Court } from "../../types/court";
-import { ICourtCreate } from "./types";
+import { Court, CourtCreate } from "../../types/court";
 
 export class CourtService {
     private static instance: CourtService;
@@ -94,7 +93,7 @@ export class CourtService {
         }
     }
 
-    public async create(court: ICourtCreate): Promise<Court> {
+    public async create(court: CourtCreate): Promise<Court> {
         try {
             const response = await api.post("/courts", court);
             if (response.status !== 201) {
@@ -120,7 +119,7 @@ export class CourtService {
         }
     }
 
-    public async update(id: number, court: ICourtCreate): Promise<Court> {
+    public async update(id: number, court: CourtCreate): Promise<Court> {
         try {
             const response = await api.put(`/courts/${id}`, court);
             if (response.status !== 200) {

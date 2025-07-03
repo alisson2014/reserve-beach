@@ -1,6 +1,6 @@
 import axios from "axios";
 import api from "../../api";
-import { CartInformation, CartItemBody } from "./types";
+import { CartInformation, CartItemsBody } from "./types";
 
 export class CartService {
     private static instance: CartService;
@@ -47,7 +47,7 @@ export class CartService {
         }
     }
 
-    public async addToCart(data: CartItemBody): Promise<void> {
+    public async addItems(data: CartItemsBody): Promise<void> {
         try {
             await api.post('/cart/items', data);
         } catch (error) {

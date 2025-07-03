@@ -53,7 +53,8 @@ export default function PaymentDialog({
                     courtScheduleId: item.courtScheduleId,
                     paymentMethodId: paymentMethod,
                     scheduledAt: item.scheduleDate,
-                    totalValue: totalAmount
+                    totalValue: totalAmount,
+                    cartItemId: item.cartItemId
                 };
             });
             await scheduleService.create(createSchedule);

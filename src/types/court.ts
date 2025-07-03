@@ -14,3 +14,5 @@ export interface Court {
     deletedAt: string | null;
     schedules: CourtSchedule[];
 };
+
+export type CourtCreate = Pick<Court, 'name' | 'description' | 'imageUrl' | 'schedulingFee' | 'capacity'>;

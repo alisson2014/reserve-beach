@@ -1,4 +1,4 @@
-export interface CartItemBody {
+export interface CartItemsBody {
     scheduleDate: string;
     courtScheduleIds: number[];
 };
