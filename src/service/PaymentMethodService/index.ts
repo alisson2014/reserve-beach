@@ -14,7 +14,7 @@ export class PaymentMethodService {
         return PaymentMethodService.instance;
     }
 
-    public async getPaymentMethods(): Promise<PaymentMethod[]> {
+    public async all(): Promise<PaymentMethod[]> {
         try {
             const urlSearchParams = new URLSearchParams();
             urlSearchParams.append('active', 'true');

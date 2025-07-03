@@ -147,7 +147,6 @@ export default function AddCourt(): JSX.Element {
                 hours: [...new Set(schedules.map(s => `${s.startTime.substring(0, 5)} - ${s.endTime.substring(0, 5)}`))]
             };
 
-            console.log("Dados da quadra formatados:", formattedData);
             reset(formattedData);
             setModalImageUrl(formattedData.imageUrl || '');
 

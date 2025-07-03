@@ -31,7 +31,7 @@ export class CourtScheduleService {
         }
     }
 
-    public async create(courtSchedule: CourtSchedule[]): Promise<{ message: string }> {
+    public async create(courtSchedule:  Omit<CourtSchedule, 'id'>[]): Promise<{ message: string }> {
         try {
             const { data } = await api.post("/court_schedules", courtSchedule);
             return { message: data.message };

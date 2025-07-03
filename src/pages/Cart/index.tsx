@@ -1,4 +1,4 @@
-import React, { JSX, useCallback, useEffect, useState } from "react";
+import React, { JSX, useCallback, useEffect, useMemo, useState } from "react";
 import {
   Box,
   Button,
@@ -20,16 +20,17 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { CartInformation } from "../../service/CartService/types";
 import { CartService } from "../../service";
+import { useAuth } from "../../contexts";
 
 const cartService = CartService.getInstance();
 
 export default function Cart(): JSX.Element {
+    const { isAuthenticated } = useAuth();
+
     const [cartInfo, setCartInfo] = useState<readonly CartInformation[]>([]);
     const [selected, setSelected] = useState<readonly number[]>([]);
 
     const [isPaymentDialogOpen, setPaymentDialogOpen] = useState<boolean>(false);
-    const [paymentMethod, setPaymentMethod] = useState<string>('');
-    const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
     const fetchCartInfo = useCallback(async (): Promise<void> => {
         try {
@@ -83,36 +84,22 @@ export default function Cart(): JSX.Element {
         setPaymentDialogOpen(true);
     }, []);
 
-    const handleConfirmPayment = useCallback(async () => {
-        if (!paymentMethod) {
-            alert("Por favor, selecione uma forma de pagamento."); // Ou usar um componente de Snackbar/Toast
-            return;
-        }
-        setIsProcessing(true);
-        try {
-            // Você precisará criar este método no seu serviço
-            // await cartService.processPayment(selected, paymentMethod);
-            
-            // Sucesso
-            setPaymentDialogOpen(false);
-            setSelected([]);
-            setPaymentMethod('');
-            fetchCartInfo(); // Atualiza a lista do carrinho
-            // Opcional: Mostrar uma mensagem de sucesso para o usuário
-            
-        } catch (error) {
-            console.error("Erro ao processar pagamento:", error);
-            // Opcional: Mostrar uma mensagem de erro para o usuário
-        } finally {
-            setIsProcessing(false);
-        }
-    }, [paymentMethod, fetchCartInfo]);
+    const onConfirmPayment = useCallback(async () => {
+        setPaymentDialogOpen(false);
+        setSelected([]);
+        fetchCartInfo(); 
+    }, [fetchCartInfo]);
 
     const isSelected = useCallback((id: number): boolean => selected.indexOf(id) !== -1, [selected]);
 
     useEffect(() => {
         fetchCartInfo();
     }, [fetchCartInfo]);
+
+    const totalAmount = useMemo(() => {
+        const selectedItems = cartInfo.filter(item => selected.includes(item.cartItemId));
+        return selectedItems.reduce((sum, item) => sum + item.schedulingFee, 0);
+    }, [cartInfo, selected]);
 
     const ListItems = () => {
         const isMobile = useMediaQuery(theme => theme.breakpoints.down('sm'));
@@ -181,6 +168,18 @@ export default function Cart(): JSX.Element {
         );
     };
 
+    if (!isAuthenticated) {
+        return (
+            <Container sx={{ py: 4, mt: { xs: 7, sm: 8 } }}>
+                <BasePaper>
+                    <Typography variant="h5" component="p" gutterBottom>
+                        Você precisa estar logado para acessar o carrinho de agendamentos.
+                    </Typography>
+                </BasePaper>
+            </Container>
+        );
+    }
+
     return (
         <Container sx={{ py: 4, mt: { xs: 7, sm: 8 } }}>
             <BasePaper>
@@ -216,13 +215,9 @@ export default function Cart(): JSX.Element {
 
             <PaymentDialog 
                 open={isPaymentDialogOpen}
-                isProcessing={isProcessing}
-                paymentMethod={paymentMethod}
                 onClose={() => setPaymentDialogOpen(false)}
-                onConfirm={handleConfirmPayment}
-                onPaymentMethodChange={(event) => setPaymentMethod(event.target.value as string)}
-                //O totalAmount precisa ser calculado com base nos itens selecionados
-                totalAmount={cartInfo.reduce((total, item) => selected.includes(item.cartItemId) ? total + item.schedulingFee : total, 0)}
+                totalAmount={totalAmount}
+                onConfirmPayment={onConfirmPayment}
             />
         </Container>
     );
