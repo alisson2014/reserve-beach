@@ -13,18 +13,20 @@ import {
     CircularProgress,
     Typography,
 } from '@mui/material';
-import { PaymentMethodService } from '../../service';
+import { PaymentMethodService, ScheduleService } from '../../service';
 import { PaymentDialogProps } from './types';
 import { PaymentMethod } from '../../types/payment_method';
 import { useToast } from '../../contexts';
 
 const paymentService = PaymentMethodService.getInstance();
+const scheduleService = ScheduleService.getInstance(); 
 
 export default function PaymentDialog({
     open,
     onClose,
     totalAmount,
-    onConfirmPayment
+    onConfirmPayment,
+    selectedItems
 }: PaymentDialogProps): JSX.Element {
     const [paymentMethod, setPaymentMethod] = useState<number | null>(null);
     const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
@@ -41,12 +43,20 @@ export default function PaymentDialog({
         }
     }, []);
 
-    const onConfirm = useCallback(() => {
-        //Aqui tenho que chamar o backend passando uma Lista de itens a serem adicionados na tabela agendamentos
-        //Tenho que receber por props esses itens
+    const onConfirm = useCallback(async () => {
+        if(!paymentMethod) return;
+
         setIsProcessing(true);
         try {
-            console.log("Processando pagamento com método:", paymentMethod);
+            const createSchedule = selectedItems.map(item => {
+                return {
+                    courtScheduleId: item.courtScheduleId,
+                    paymentMethodId: paymentMethod,
+                    scheduledAt: item.scheduleDate,
+                    totalValue: totalAmount
+                };
+            });
+            await scheduleService.create(createSchedule);
         } catch (error) {
             showToast("Erro ao processar pagamento", "error");
             console.error("Erro ao processar pagamento:", error);
@@ -54,7 +64,7 @@ export default function PaymentDialog({
             setIsProcessing(false);
             onConfirmPayment();
         }
-    }, [onConfirmPayment, paymentMethod, showToast]);
+    }, [onConfirmPayment, paymentMethod, showToast, selectedItems, totalAmount]);
 
     useEffect(() => {
         fetchPaymentMethods();

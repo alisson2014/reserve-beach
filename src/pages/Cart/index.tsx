@@ -218,6 +218,7 @@ export default function Cart(): JSX.Element {
                 onClose={() => setPaymentDialogOpen(false)}
                 totalAmount={totalAmount}
                 onConfirmPayment={onConfirmPayment}
+                selectedItems={cartInfo.filter(item => selected.includes(item.cartItemId))}
             />
         </Container>
     );

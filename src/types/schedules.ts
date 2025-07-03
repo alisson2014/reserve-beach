@@ -7,7 +7,7 @@ export interface Schedule {
     userId: User['id'];
     courtScheduleId: CourtSchedule['id'];
     totalValue: number;
-    paymenMethodId: PaymentMethod['id'];
+    paymentMethodId: PaymentMethod['id'];
     transactionId?: string;
     scheduledAt: string;
     createdAt: string;
